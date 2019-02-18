@@ -1,7 +1,7 @@
 # Личный проект «Киноман» [![Build status][travis-image]][travis-url]
 
 * Студент: [Алиса Филатова](https://up.htmlacademy.ru/ecmascript/8/user/384097).
-* Наставник: `Неизвестно`.
+* Наставник: `Анна Тюрина`.
 
 ---
 
