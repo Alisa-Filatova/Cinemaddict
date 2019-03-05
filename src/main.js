@@ -1,6 +1,8 @@
 import drawFilter from './draw-filter';
 import drawFilmCard from './draw-film-card';
-import {generateRandomNumber} from './utils';
+import drawFilmSection from './draw-film-section';
+import {generateRandomNumber} from './utils/generate-random-number';
+import {getFilmCard} from './utils/get-film-card';
 
 const MAX_FILMS_COUNT = 100;
 const MAIN_BLOCK_MAX_CARDS = 7;
@@ -29,33 +31,8 @@ const filters = [
   },
 ];
 
-const film = {
-  title: `Incredibles 2`,
-  rating: 8.7,
-  year: 2018,
-  duration: `1h 30m`,
-  genre: `Comedy`,
-  poster: `./images/posters/moonrise.jpg`,
-  desc: `A priests Romania and confront a malevolent force in the form of a demonic nun.`,
-  commentsCount: 8,
-  controls: true,
-};
-
-const extraFilm = {
-  title: `Incredibles`,
-  rating: 7.7,
-  year: 2017,
-  duration: `3h 30m`,
-  genre: `Comedy`,
-  poster: `./images/posters/accused.jpg`,
-  desc: `A priests Romania and confront a malevolent force in the form of a demonic nun.`,
-  commentsCount: 10,
-  controls: false,
-};
-
 const mainNavigation = document.querySelector(`.main-navigation`);
-const mainFilmsList = document.querySelector(`.films-list .films-list__container`);
-const [topRatedFilmsList, mostCommentedFilmsList] = document.querySelectorAll(`.films-list--extra .films-list__container`);
+const filmsContainer = document.querySelector(`.films`);
 
 // При помощи функции, описанной в пункте 3 отрисуйте все фильтры, предусмотренные макетом:
 // «All movies», «Watchlist», «History», «Favorites». Не забудьте возле фильтров «Watchlist»,
@@ -73,13 +50,15 @@ filters.reverse().forEach((filter, index) => {
 // Используя функцию из пункта 4 отрисуйте семь одинаковых карточек фильмов.
 // Ещё по две карточки отрисуйте в блоки «Top rated» и «Most commented»
 
-const drawFilmCards = (container, card, count) => {
-  container.insertAdjacentHTML(`afterbegin`, Array.from({length: count}).map(() => drawFilmCard(card)).join(``));
-};
+const drawFilmCards = (amount, withControls) => (
+  new Array(amount).fill(``).map(() => drawFilmCard(getFilmCard(), withControls)).join(``));
 
-drawFilmCards(mainFilmsList, film, MAIN_BLOCK_MAX_CARDS);
-drawFilmCards(topRatedFilmsList, extraFilm, EXTRA_BLOCK_MAX_CARDS);
-drawFilmCards(mostCommentedFilmsList, extraFilm, EXTRA_BLOCK_MAX_CARDS);
+const renderFilmsSection = (title, cardsCount, extra, withControls = false) =>
+  filmsContainer.insertAdjacentHTML(`beforeend`, drawFilmSection(title, drawFilmCards(cardsCount, withControls), extra));
+
+renderFilmsSection(`All movies. Upcoming`, MAIN_BLOCK_MAX_CARDS, false, true);
+renderFilmsSection(`Top rated`, EXTRA_BLOCK_MAX_CARDS, true);
+renderFilmsSection(`Most commented`, EXTRA_BLOCK_MAX_CARDS, true);
 
 // Добавьте обработчик для переключения фильтров. При их переключении удаляйте все
 // ранее созданные фильмы и добавляйте случайное количество новых.
@@ -89,14 +68,14 @@ const onFilterItemClick = (event) => {
 
   if (!event.currentTarget.classList.contains(`main-navigation__item--additional`)) {
     const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
-    activeItem.classList.remove(`main-navigation__item--active`);
+    const mainFilmsList = document.querySelector(`.films-list .films-list__container`);
+    const filmCards = mainFilmsList.querySelectorAll(`.film-card`);
 
+    activeItem.classList.remove(`main-navigation__item--active`);
     event.currentTarget.classList.add(`main-navigation__item--active`);
 
-    const filmCards = mainFilmsList.querySelectorAll(`.film-card`);
     filmCards.forEach((item) => item.remove());
-
-    drawFilmCards(mainFilmsList, film, generateRandomNumber(MAIN_BLOCK_MAX_CARDS));
+    mainFilmsList.insertAdjacentHTML(`afterbegin`, drawFilmCards(generateRandomNumber(MAIN_BLOCK_MAX_CARDS), true));
   }
 };
 
