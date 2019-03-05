@@ -1,8 +1,8 @@
 import drawFilter from './draw-filter';
 import drawFilmCard from './draw-film-card';
 import drawFilmSection from './draw-film-section';
-import {generateRandomNumber} from './utils/generateRandomNumber';
-import {getFilmCard} from './utils/getFilmCard';
+import {generateRandomNumber} from './utils/generate-random-number';
+import {getFilmCard} from './utils/get-film-card';
 
 const MAX_FILMS_COUNT = 100;
 const MAIN_BLOCK_MAX_CARDS = 7;
