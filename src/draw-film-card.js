@@ -8,7 +8,7 @@ export default (card, withControls) => (
       <span class="film-card__genre">${card.genre}</span>
     </p>
     <img src="${card.poster}" alt="${card.title}" class="film-card__poster">
-    <p class="film-card__description">${card.desc}</p>
+    <p class="film-card__description">${card.description}</p>
     <button class="film-card__comments">${card.commentsCount} comments</button>
 
     ${withControls ? `<form class="film-card__controls">

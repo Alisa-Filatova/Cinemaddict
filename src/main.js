@@ -1,6 +1,6 @@
 import drawFilter from './draw-filter';
-import drawFilmCard from './draw-film-card';
-import drawFilmSection from './draw-film-section';
+import FilmCard from './film-card';
+import FilmSection from './film-section';
 import {generateRandomNumber} from './utils/generate-random-number';
 import {getFilmCard} from './utils/get-film-card';
 
@@ -34,6 +34,31 @@ const filters = [
 const mainNavigation = document.querySelector(`.main-navigation`);
 const filmsContainer = document.querySelector(`.films`);
 
+const renderFilmsSection = (container, title, extra = false) => {
+  const section = new FilmSection(title, extra);
+  section.render(container);
+};
+
+const renderFilmsList = (container, amount, showControls = true) => {
+  Array.from({length: amount}).forEach(() => {
+    const card = new FilmCard(getFilmCard(), showControls);
+    card.render(container);
+  });
+};
+
+renderFilmsSection(filmsContainer, `All movies. Upcoming`);
+const mainFilmsList = filmsContainer.querySelector(`.films-list .films-list__container`);
+renderFilmsList(mainFilmsList, MAIN_BLOCK_MAX_CARDS);
+
+renderFilmsSection(filmsContainer, `Top rated`, true);
+const topFilmsList = filmsContainer.querySelector(`.films-list--extra .films-list__container`);
+renderFilmsList(topFilmsList, EXTRA_BLOCK_MAX_CARDS, false);
+
+renderFilmsSection(filmsContainer, `Most Commented`, true);
+const mostCommentedFilmsList = filmsContainer.querySelectorAll(`.films-list--extra .films-list__container`)[1];
+renderFilmsList(mostCommentedFilmsList, EXTRA_BLOCK_MAX_CARDS, false);
+
+
 // При помощи функции, описанной в пункте 3 отрисуйте все фильтры, предусмотренные макетом:
 // «All movies», «Watchlist», «History», «Favorites». Не забудьте возле фильтров «Watchlist»,
 // «History» и «Favorites» вывести произвольное число, которое будет притворяться количеством фильмов,
@@ -47,19 +72,6 @@ filters.reverse().forEach((filter, index) => {
   mainNavigation.insertAdjacentHTML(`afterbegin`, drawFilter(filterItem));
 });
 
-// Используя функцию из пункта 4 отрисуйте семь одинаковых карточек фильмов.
-// Ещё по две карточки отрисуйте в блоки «Top rated» и «Most commented»
-
-const drawFilmCards = (amount, withControls) => (
-  new Array(amount).fill(``).map(() => drawFilmCard(getFilmCard(), withControls)).join(``));
-
-const renderFilmsSection = (title, cardsCount, extra, withControls = false) =>
-  filmsContainer.insertAdjacentHTML(`beforeend`, drawFilmSection(title, drawFilmCards(cardsCount, withControls), extra));
-
-renderFilmsSection(`All movies. Upcoming`, MAIN_BLOCK_MAX_CARDS, false, true);
-renderFilmsSection(`Top rated`, EXTRA_BLOCK_MAX_CARDS, true);
-renderFilmsSection(`Most commented`, EXTRA_BLOCK_MAX_CARDS, true);
-
 // Добавьте обработчик для переключения фильтров. При их переключении удаляйте все
 // ранее созданные фильмы и добавляйте случайное количество новых.
 
@@ -68,14 +80,13 @@ const onFilterItemClick = (event) => {
 
   if (!event.currentTarget.classList.contains(`main-navigation__item--additional`)) {
     const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
-    const mainFilmsList = document.querySelector(`.films-list .films-list__container`);
     const filmCards = mainFilmsList.querySelectorAll(`.film-card`);
 
     activeItem.classList.remove(`main-navigation__item--active`);
     event.currentTarget.classList.add(`main-navigation__item--active`);
 
     filmCards.forEach((item) => item.remove());
-    mainFilmsList.insertAdjacentHTML(`afterbegin`, drawFilmCards(generateRandomNumber(MAIN_BLOCK_MAX_CARDS), true));
+    renderFilmsList(mainFilmsList, MAIN_BLOCK_MAX_CARDS);
   }
 };
 

@@ -45,7 +45,7 @@ const commentsCountSet = [200, 9, 1, 23, 20, 50, 78];
 export const getFilmCard = () => ({
   title: getRandomArrayElement(titles),
   poster: `./images/posters/${getRandomArrayElement(posters)}.jpg`,
-  desc: description.split(`. `).sort(compareRandom).slice(0, generateRandomNumber(2)).join(`. `),
+  description: description.split(`. `).sort(compareRandom).slice(0, generateRandomNumber(2)).join(`. `),
   rating: getRandomArrayElement(ratings),
   year: getRandomArrayElement(years),
   duration: getRandomArrayElement(durations),
