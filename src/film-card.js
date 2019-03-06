@@ -13,6 +13,23 @@ class FilmCard {
 
     this._element = null;
     this._showControls = showControls;
+    this._onCommentsClick = null;
+  }
+
+  _onCommentsBtnClick(event) {
+    event.preventDefault();
+
+    if (typeof this._onCommentsClick === `function`) {
+      this._onCommentsClick();
+    }
+  }
+
+  get element() {
+    return this._element;
+  }
+
+  set onCommentsClick(fn) {
+    this._onCommentsClick = fn;
   }
 
   get template() {
@@ -37,14 +54,26 @@ class FilmCard {
     );
   }
 
-  render(container) {
-    if (this._element) {
-      container.removeChild(this._element);
-      this._element = null;
-    }
-
+  render() {
     this._element = createElement(this.template);
-    container.appendChild(this._element);
+    this.addEventListeners();
+    return this._element;
+  }
+
+  destroy() {
+    this.removeEventListeners();
+    this._element.remove();
+    this._element = null;
+  }
+
+  addEventListeners() {
+    this._element.querySelector(`.film-card__comments`)
+      .addEventListener(`click`, this._onCommentsBtnClick.bind(this));
+  }
+
+  removeEventListeners() {
+    this._element.querySelector(`.film-card__comments`)
+      .removeEventListener(`click`, this._onCommentsBtnClick.bind(this));
   }
 }
 
