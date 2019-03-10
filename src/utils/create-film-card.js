@@ -1,9 +1,7 @@
 import {compareRandom} from './compare-random';
 import {generateRandomNumber} from './generate-random-number';
 import {getRandomArrayElement} from './get-random-array-element';
-import {EMOJIES} from '../constants';
-
-const MAX_SENTENCES_FOR_DESCRIPTION = 2;
+import {EMOJIES, MAX_SENTENCES_FOR_FILM_DESCRIPTION} from '../constants';
 
 const titles = [
   `Mr Nobody`,
@@ -70,9 +68,21 @@ export const createFilmCard = () => ({
   titleOriginal: getRandomArrayElement(titles),
   director: getRandomArrayElement(directors),
   poster: `./images/posters/${getRandomArrayElement(posters)}.jpg`,
-  description: description.split(`. `).sort(compareRandom).slice(0, generateRandomNumber(MAX_SENTENCES_FOR_DESCRIPTION)).join(`. `),
-  writers: writersList.sort(compareRandom).slice(0, generateRandomNumber(writersList.length)).join(`, `),
-  actors: actorsList.sort(compareRandom).slice(0, generateRandomNumber(actorsList.length)).join(`, `),
+  description:
+    description.split(`. `)
+      .sort(compareRandom)
+      .slice(0, generateRandomNumber(MAX_SENTENCES_FOR_FILM_DESCRIPTION))
+      .join(`. `),
+  writers:
+    writersList
+      .sort(compareRandom)
+      .slice(0, generateRandomNumber(writersList.length))
+      .join(`, `),
+  actors:
+    actorsList
+      .sort(compareRandom)
+      .slice(0, generateRandomNumber(actorsList.length))
+      .join(`, `),
   rating: getRandomArrayElement(ratings),
   userRate: getRandomArrayElement(ratings),
   year: getRandomArrayElement(years),
