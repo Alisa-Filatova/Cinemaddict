@@ -1,26 +1,5 @@
-import {createElement} from './utils/create-element';
-
-const filmDetailsControls = [
-  {
-    name: `Add to watchlist`,
-    id: `watchlist`
-  },
-  {
-    name: `Already watched`,
-    id: `watched`,
-    checked: true
-  },
-  {
-    name: `Add to favorites`,
-    id: `favorites`
-  },
-];
-
-const emojies = [
-  {emoji: `😴`, name: `sleeping`},
-  {emoji: `😐`, name: `neutral-face`},
-  {emoji: `😀`, name: `grinning`},
-];
+import {createElement} from './utils';
+import {EMOJIES, MAX_RATE_NUMBER, FILM_DETAILS_CONTROLS} from './constants';
 
 class FilmPopup {
   constructor(data) {
@@ -60,13 +39,9 @@ class FilmPopup {
     this._onClose = fn;
   }
 
-  get element() {
-    return this._element;
-  }
-
   get template() {
 
-    const filmDetails = [
+    const FILM_DETAILS = [
       {title: `Director`, value: this._director},
       {title: `Writers`, value: this._writers},
       {title: `Actors`, value: this._actors},
@@ -104,7 +79,7 @@ class FilmPopup {
               </div>
       
               <table class="film-details__table">
-                ${filmDetails.map((item) => `<tr class="film-details__row">
+                ${FILM_DETAILS.map((item) => `<tr class="film-details__row">
                   <td class="film-details__term">${item.title}</td>
                   <td class="film-details__cell">${item.value}</td>
                 </tr>`).join(``)}
@@ -115,7 +90,7 @@ class FilmPopup {
           </div>
       
           <section class="film-details__controls">
-            ${filmDetailsControls.map((item) => `<input 
+            ${FILM_DETAILS_CONTROLS.map((item) => `<input 
               type="checkbox" 
               class="film-details__control-input visually-hidden" 
               id="${item.id}" 
@@ -150,7 +125,7 @@ class FilmPopup {
                 <input type="checkbox" class="film-details__add-emoji visually-hidden" id="add-emoji">
       
                 <div class="film-details__emoji-list">
-                  ${emojies.map((item, idx) => `<input 
+                  ${EMOJIES.map((item, idx) => `<input 
                     class="film-details__emoji-item visually-hidden" 
                     name="comment-emoji" 
                     type="radio" 
@@ -185,7 +160,7 @@ class FilmPopup {
                 <p class="film-details__user-rating-feelings">How you feel it?</p>
       
                 <div class="film-details__user-rating-score">
-                  ${Array.from(Array(9).keys()).map((idx) => `<input 
+                  ${Array.from(Array(MAX_RATE_NUMBER).keys()).map((idx) => `<input 
                     type="radio" name="score" 
                     class="film-details__user-rating-input visually-hidden" 
                     value="${idx + 1}" 

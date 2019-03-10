@@ -1,4 +1,4 @@
-import {createElement} from './utils/create-element';
+import {createElement} from './utils';
 
 class FilmCard {
   constructor(data, showControls = true) {
@@ -22,10 +22,6 @@ class FilmCard {
     if (typeof this._onCommentsClick === `function`) {
       this._onCommentsClick();
     }
-  }
-
-  get element() {
-    return this._element;
   }
 
   set onCommentsClick(fn) {
@@ -60,20 +56,9 @@ class FilmCard {
     return this._element;
   }
 
-  destroy() {
-    this.removeEventListeners();
-    this._element.remove();
-    this._element = null;
-  }
-
   addEventListeners() {
     this._element.querySelector(`.film-card__comments`)
       .addEventListener(`click`, this._onCommentsBtnClick.bind(this));
-  }
-
-  removeEventListeners() {
-    this._element.querySelector(`.film-card__comments`)
-      .removeEventListener(`click`, this._onCommentsBtnClick.bind(this));
   }
 }
 

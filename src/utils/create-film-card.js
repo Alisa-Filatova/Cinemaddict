@@ -1,6 +1,9 @@
 import {compareRandom} from './compare-random';
 import {generateRandomNumber} from './generate-random-number';
 import {getRandomArrayElement} from './get-random-array-element';
+import {EMOJIES} from '../constants';
+
+const MAX_SENTENCES_FOR_DESCRIPTION = 2;
 
 const titles = [
   `Mr Nobody`,
@@ -46,15 +49,16 @@ const writersList = [`Christopher Nolan`, `Luc Besson`, `Martin Scorsese`, `Guy 
 const actorsList = [`Brad Pitt`, `Hugh Laurie`, `Nichole Kidman`, `Jhonny Depp`, `Jim Carrey`, `Kate Winslet`];
 const ages = [18, 10, 6, 16, 3];
 const countries = [`USA`, `Canada`, `Russia`, `France`, `England`];
+const [sleeping, happy] = [EMOJIES[0].emoji, EMOJIES[2].emoji];
 const allComments = [
   {
-    emoji: `😐`,
+    emoji: sleeping,
     comment: `So boring...`,
     userName: `Vasya Pupkin`,
     date: `12 june 2018`
   },
   {
-    emoji: `😀`,
+    emoji: happy,
     comment: `Like it...`,
     userName: `Ann Hetaway`,
     date: `15 june 2019`
@@ -66,7 +70,7 @@ export const createFilmCard = () => ({
   titleOriginal: getRandomArrayElement(titles),
   director: getRandomArrayElement(directors),
   poster: `./images/posters/${getRandomArrayElement(posters)}.jpg`,
-  description: description.split(`. `).sort(compareRandom).slice(0, generateRandomNumber(2)).join(`. `),
+  description: description.split(`. `).sort(compareRandom).slice(0, generateRandomNumber(MAX_SENTENCES_FOR_DESCRIPTION)).join(`. `),
   writers: writersList.sort(compareRandom).slice(0, generateRandomNumber(writersList.length)).join(`, `),
   actors: actorsList.sort(compareRandom).slice(0, generateRandomNumber(actorsList.length)).join(`, `),
   rating: getRandomArrayElement(ratings),
