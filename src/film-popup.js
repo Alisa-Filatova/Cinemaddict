@@ -1,8 +1,10 @@
-import {createElement} from './utils';
+import Component from './component';
 import {EMOJIES, MAX_RATE_NUMBER, FILM_DETAILS_CONTROLS} from './constants';
 
-class FilmPopup {
+class FilmPopup extends Component {
+
   constructor(data) {
+    super();
     this._title = data.title;
     this._titleOriginal = data.titleOriginal;
     this._description = data.description;
@@ -22,7 +24,6 @@ class FilmPopup {
     this._releaseCountry = data.releaseCountry;
     this._comments = data.comments;
 
-    this._element = null;
     this._onClose = null;
     this._onCloseClick = this._onCloseClick.bind(this);
   }
@@ -41,7 +42,7 @@ class FilmPopup {
 
   get template() {
 
-    const FILM_DETAILS = [
+    const filmDetails = [
       {title: `Director`, value: this._director},
       {title: `Writers`, value: this._writers},
       {title: `Actors`, value: this._actors},
@@ -77,14 +78,12 @@ class FilmPopup {
                   <p class="film-details__user-rating">Your rate ${this._userRate}</p>
                 </div>
               </div>
-      
               <table class="film-details__table">
-                ${FILM_DETAILS.map((item) => `<tr class="film-details__row">
+                ${filmDetails.map((item) => `<tr class="film-details__row">
                   <td class="film-details__term">${item.title}</td>
-                  <td class="film-details__cell">${item.value}</td>
+                <td class="film-details__cell">${item.value}</td>
                 </tr>`).join(``)}
               </table>
-      
               <p class="film-details__film-description">${this._description}</p>
             </div>
           </div>
@@ -174,18 +173,6 @@ class FilmPopup {
         </form>
       </section>`
     );
-  }
-
-  render() {
-    this._element = createElement(this.template);
-    this.addEventListeners();
-    return this._element;
-  }
-
-  destroy() {
-    this.removeEventListeners();
-    this._element.remove();
-    this._element = null;
   }
 
   addEventListeners() {

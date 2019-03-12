@@ -1,10 +1,10 @@
-import {createElement} from './utils';
+import Component from './component';
 
-class FilmSection {
+class FilmSection extends Component {
   constructor(title, isExtra = false) {
+    super();
     this._title = title;
     this._isExtra = isExtra;
-    this._element = null;
   }
 
   get template() {
@@ -15,11 +15,6 @@ class FilmSection {
         ${this._isExtra ? `` : `<button class="films-list__show-more">Show more</button>`}
       </section>`
     );
-  }
-
-  render() {
-    this._element = createElement(this.template);
-    return this._element;
   }
 }
 
