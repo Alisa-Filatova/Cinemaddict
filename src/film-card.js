@@ -1,7 +1,8 @@
-import {createElement} from './utils';
+import Component from './component';
 
-class FilmCard {
+class FilmCard extends Component {
   constructor(data, showControls = true) {
+    super();
     this._title = data.title;
     this._description = data.description;
     this._poster = data.poster;
@@ -11,7 +12,6 @@ class FilmCard {
     this._genre = data.genre;
     this._commentsCount = data.commentsCount;
 
-    this._element = null;
     this._showControls = showControls;
     this._onCommentsClick = null;
   }
@@ -48,12 +48,6 @@ class FilmCard {
         </form>` : ``}
       </article>`
     );
-  }
-
-  render() {
-    this._element = createElement(this.template);
-    this.addEventListeners();
-    return this._element;
   }
 
   addEventListeners() {
