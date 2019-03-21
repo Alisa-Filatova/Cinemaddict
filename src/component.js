@@ -24,6 +24,8 @@ class Component {
     return this._element;
   }
 
+  update() {}
+
   addEventListeners() {}
 
   removeEventListeners() {}

@@ -1,4 +1,6 @@
-// PROJECT
+export const DAY_LENGTH = 86400000;
+export const WEEKDAYS_COUNT = 7;
+
 export const MAIN_BLOCK_MAX_CARDS = 7;
 export const EXTRA_BLOCK_MAX_CARDS = 2;
 export const MAX_RATE_NUMBER = 9;
@@ -47,29 +49,5 @@ export const FILM_DETAILS_CONTROLS = [
   {
     name: `Add to favorites`,
     id: `favorites`,
-  },
-];
-
-export const FILM_SECTIONS = [
-  {
-    title: `All movies. Upcoming`,
-    isExtra: false,
-    cardsCount: MAIN_BLOCK_MAX_CARDS,
-    container: `.films-list .films-list__container`,
-    showControls: true,
-  },
-  {
-    title: `Top rated`,
-    isExtra: true,
-    cardsCount: EXTRA_BLOCK_MAX_CARDS,
-    container: `.films-list--extra:nth-child(2) .films-list__container`,
-    showControls: false,
-  },
-  {
-    title: `Most Commented`,
-    isExtra: true,
-    cardsCount: EXTRA_BLOCK_MAX_CARDS,
-    container: `.films-list--extra:nth-child(3) .films-list__container`,
-    showControls: false,
   },
 ];
