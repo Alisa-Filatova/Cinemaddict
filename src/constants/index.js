@@ -1,8 +1,4 @@
-export const DAY_LENGTH = 86400000;
-export const WEEKDAYS_COUNT = 7;
-export const HOUR = 60;
 export const BOOLEANS = [false, true];
-
 export const MAIN_BLOCK_MAX_CARDS = 7;
 export const EXTRA_BLOCK_MAX_CARDS = 2;
 export const MAX_RATE_NUMBER = 9;
@@ -38,18 +34,3 @@ export const FILTERS = [
   },
 ];
 
-export const FILM_DETAILS_CONTROLS = [
-  {
-    name: `Add to watchlist`,
-    id: `watchlist`,
-  },
-  {
-    name: `Already watched`,
-    id: `watched`,
-    checked: true,
-  },
-  {
-    name: `Add to favorites`,
-    id: `favorites`,
-  },
-];

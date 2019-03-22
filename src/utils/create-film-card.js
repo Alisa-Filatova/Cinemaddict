@@ -1,14 +1,16 @@
-import {compareRandom} from './compare-random';
-import {generateRandomNumber} from './generate-random-number';
-import {getRandomArrayElement} from './get-random-array-element';
+import moment from 'moment';
+import {
+  compareRandom,
+  generateRandomNumber,
+  getRandomArrayElement,
+  getRandomInteger
+} from './index';
+import {Time} from '../enums';
 import {
   EMOJIES,
   MAX_SENTENCES_FOR_FILM_DESCRIPTION,
-  DAY_LENGTH,
-  WEEKDAYS_COUNT,
-  HOUR,
-  MAX_RATE_NUMBER,
   BOOLEANS,
+  MAX_RATE_NUMBER,
 } from '../constants';
 
 const TITLES = [
@@ -50,29 +52,29 @@ const COMMENTS = [
     emoji: EMOJIES.sleeping,
     comment: `So boring...`,
     userName: getRandomArrayElement(ACTORS),
-    date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
+    date: moment(),
   },
   {
     emoji: EMOJIES.grinning,
     comment: `Like it...`,
     userName: getRandomArrayElement(ACTORS),
-    date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
+    date: moment(),
   },
   {
     emoji: EMOJIES.grinning,
     comment: `So so...`,
     userName: getRandomArrayElement(ACTORS),
-    date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
+    date: moment(),
   },
   {
     emoji: EMOJIES.sleeping,
     comment: `I'm slept`,
     userName: getRandomArrayElement(ACTORS),
-    date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
+    date: moment(),
   }
 ];
 
-const description = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, 
+const DESCRIPTION = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, 
   non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam 
   id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, 
   sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, 
@@ -85,7 +87,7 @@ export const createFilmCard = () => ({
   director: getRandomArrayElement(DIRECTORS),
   poster: `./images/posters/${getRandomArrayElement(POSTERS)}.jpg`,
   description:
-    description.split(`. `)
+    DESCRIPTION.split(`. `)
       .sort(compareRandom)
       .slice(0, generateRandomNumber(MAX_SENTENCES_FOR_FILM_DESCRIPTION))
       .join(`. `),
@@ -99,19 +101,16 @@ export const createFilmCard = () => ({
       .sort(compareRandom)
       .slice(0, generateRandomNumber(ACTORS.length))
       .join(`, `),
-  rating: (Math.random() * (MAX_RATE_NUMBER - 2 + 1) + 2).toFixed(1),
+  rating: getRandomInteger(MAX_RATE_NUMBER).toFixed(1),
   score: generateRandomNumber(MAX_RATE_NUMBER),
-  date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
-  releaseDate: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
+  releaseDate: Date.now() + getRandomInteger(Time.YEAR, (-Time.YEAR) * 15) * getRandomInteger(Time.DAY),
   country: getRandomArrayElement(COUNTRIES),
-  duration: new Date(Math.floor(Math.random() * HOUR) * 5 * HOUR * 1000),
-  runtime: new Date(Math.floor(Math.random() * HOUR) * 5 * HOUR * 1000),
-  genre: getRandomArrayElement(GENRES),
-  genres: GENRES.sort(compareRandom).join(`, `),
+  duration: getRandomInteger(Time.HOUR * 2.5, Time.HOUR),
+  genres: GENRES.sort(compareRandom),
   releaseCountry: getRandomArrayElement(COUNTRIES),
   comments: COMMENTS.slice(0, generateRandomNumber(COMMENTS.length)),
   ageLimit: getRandomArrayElement(AGE_LIMITS),
-  isFavorite: getRandomArrayElement(BOOLEANS),
-  isWatched: getRandomArrayElement(BOOLEANS),
   isInWatchlist: getRandomArrayElement(BOOLEANS),
+  isWatched: getRandomArrayElement(BOOLEANS),
+  isFavorite: getRandomArrayElement(BOOLEANS),
 });

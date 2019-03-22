@@ -22,15 +22,11 @@ const renderFilmsList = (container, amount, showControls) => {
 
     filmPopup.onSetComment = (newData) => {
       data.comments.push(newData.comments);
-      filmPopup.update(data);
       card.update(data);
+      filmPopup.update(data);
     };
 
     filmPopup.onSetRating = (newData) => {
-      if (newData.comments.comment !== ``) {
-        data.comments.push(newData.comments);
-      }
-
       data.score = newData.score;
       filmPopup.update(data);
     };
@@ -39,7 +35,6 @@ const renderFilmsList = (container, amount, showControls) => {
       card.update(data);
       filmPopup.destroy();
     };
-
   });
 };
 
