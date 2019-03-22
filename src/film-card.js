@@ -31,7 +31,6 @@ class FilmCard extends Component {
 
   update(data) {
     this._comments = data.comments;
-    this._element.querySelector(`.film-card__comments`).textContent = `${this._comments.length} comments`;
   }
 
   get template() {

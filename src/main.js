@@ -31,7 +31,7 @@ const renderFilmsList = (container, amount, showControls) => {
         data.comments.push(newData.comments);
       }
 
-      data.userRate = newData.userRate;
+      data.score = newData.score;
       filmPopup.update(data);
     };
 

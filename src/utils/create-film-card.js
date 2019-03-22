@@ -1,9 +1,17 @@
 import {compareRandom} from './compare-random';
 import {generateRandomNumber} from './generate-random-number';
 import {getRandomArrayElement} from './get-random-array-element';
-import {EMOJIES, MAX_SENTENCES_FOR_FILM_DESCRIPTION, DAY_LENGTH, WEEKDAYS_COUNT} from '../constants';
+import {
+  EMOJIES,
+  MAX_SENTENCES_FOR_FILM_DESCRIPTION,
+  DAY_LENGTH,
+  WEEKDAYS_COUNT,
+  HOUR,
+  MAX_RATE_NUMBER,
+  BOOLEANS,
+} from '../constants';
 
-const titles = [
+const TITLES = [
   `Mr Nobody`,
   `The Lord if the Rings`,
   `The Elephant Man`,
@@ -21,13 +29,47 @@ const titles = [
   `Star Wars`,
 ];
 
-const posters = [
+const POSTERS = [
   `moonrise`,
   `accused`,
   `blackmail`,
   `blue-blazes`,
   `fuga-da-new-york`,
   `three-friends`,
+];
+
+const GENRES = [`Comedy`, `Action`, `Fantasy`, `Epic`, `History`, `Dram`];
+const DIRECTORS = [`Steven Spielberg`, `Peter Jackson`, `Paul Anderson`, `James Cameron`, `Tim Burton`];
+const WRITERS = [`Christopher Nolan`, `Luc Besson`, `Martin Scorsese`, `Guy Richie`, `Stephen King`];
+const ACTORS = [`Brad Pitt`, `Hugh Laurie`, `Nichole Kidman`, `Jhonny Depp`, `Jim Carrey`, `Kate Winslet`];
+const AGE_LIMITS = [0, 3, 6, 12, 16, 18];
+const COUNTRIES = [`USA`, `Canada`, `Russia`, `France`, `England`];
+
+const COMMENTS = [
+  {
+    emoji: EMOJIES.sleeping,
+    comment: `So boring...`,
+    userName: getRandomArrayElement(ACTORS),
+    date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
+  },
+  {
+    emoji: EMOJIES.grinning,
+    comment: `Like it...`,
+    userName: getRandomArrayElement(ACTORS),
+    date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
+  },
+  {
+    emoji: EMOJIES.grinning,
+    comment: `So so...`,
+    userName: getRandomArrayElement(ACTORS),
+    date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
+  },
+  {
+    emoji: EMOJIES.sleeping,
+    comment: `I'm slept`,
+    userName: getRandomArrayElement(ACTORS),
+    date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
+  }
 ];
 
 const description = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, 
@@ -37,58 +79,39 @@ const description = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cr
   eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis 
   suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`;
 
-const allGenres = [`Comedy`, `Action`, `Fantasy`, `Epic`, `History`, `Dram`];
-const directors = [`Steven Spielberg`, `Peter Jackson`, `Paul Anderson`, `James Cameron`, `Tim Burton`];
-const writersList = [`Christopher Nolan`, `Luc Besson`, `Martin Scorsese`, `Guy Richie`, `Stephen King`];
-const actorsList = [`Brad Pitt`, `Hugh Laurie`, `Nichole Kidman`, `Jhonny Depp`, `Jim Carrey`, `Kate Winslet`];
-const ages = [18, 10, 6, 16, 3];
-const countries = [`USA`, `Canada`, `Russia`, `France`, `England`];
-const [sleeping, happy] = [EMOJIES[0].emoji, EMOJIES[2].emoji];
-const allComments = [
-  {
-    emoji: sleeping,
-    comment: `So boring...`,
-    userName: `Vasya Pupkin`,
-    date: Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000,
-  },
-  {
-    emoji: happy,
-    comment: `Like it...`,
-    userName: `Ann Hetaway`,
-    date: Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000,
-  }
-];
-
 export const createFilmCard = () => ({
-  title: getRandomArrayElement(titles),
-  titleOriginal: getRandomArrayElement(titles),
-  director: getRandomArrayElement(directors),
-  poster: `./images/posters/${getRandomArrayElement(posters)}.jpg`,
+  title: getRandomArrayElement(TITLES),
+  titleOriginal: getRandomArrayElement(TITLES),
+  director: getRandomArrayElement(DIRECTORS),
+  poster: `./images/posters/${getRandomArrayElement(POSTERS)}.jpg`,
   description:
     description.split(`. `)
       .sort(compareRandom)
       .slice(0, generateRandomNumber(MAX_SENTENCES_FOR_FILM_DESCRIPTION))
       .join(`. `),
   writers:
-    writersList
+    WRITERS
       .sort(compareRandom)
-      .slice(0, generateRandomNumber(writersList.length))
+      .slice(0, generateRandomNumber(WRITERS.length))
       .join(`, `),
   actors:
-    actorsList
+    ACTORS
       .sort(compareRandom)
-      .slice(0, generateRandomNumber(actorsList.length))
+      .slice(0, generateRandomNumber(ACTORS.length))
       .join(`, `),
-  rating: (Math.random() * (10 - 2 + 1) + 2).toFixed(1),
-  score: (Math.random() * (10 - 2 + 1) + 2).toFixed(1),
+  rating: (Math.random() * (MAX_RATE_NUMBER - 2 + 1) + 2).toFixed(1),
+  score: generateRandomNumber(MAX_RATE_NUMBER),
   date: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
   releaseDate: Date.now() - Math.floor(Math.random() * WEEKDAYS_COUNT) * DAY_LENGTH,
-  country: getRandomArrayElement(countries),
-  duration: new Date(Math.floor(Math.random() * 60) * 5 * 60 * 1000),
-  runtime: new Date(Math.floor(Math.random() * 60) * 5 * 60 * 1000),
-  genre: getRandomArrayElement(allGenres),
-  genres: allGenres.sort(compareRandom).join(`, `),
-  releaseCountry: getRandomArrayElement(countries),
-  comments: allComments,
-  ageLimit: getRandomArrayElement(ages),
+  country: getRandomArrayElement(COUNTRIES),
+  duration: new Date(Math.floor(Math.random() * HOUR) * 5 * HOUR * 1000),
+  runtime: new Date(Math.floor(Math.random() * HOUR) * 5 * HOUR * 1000),
+  genre: getRandomArrayElement(GENRES),
+  genres: GENRES.sort(compareRandom).join(`, `),
+  releaseCountry: getRandomArrayElement(COUNTRIES),
+  comments: COMMENTS.slice(0, generateRandomNumber(COMMENTS.length)),
+  ageLimit: getRandomArrayElement(AGE_LIMITS),
+  isFavorite: getRandomArrayElement(BOOLEANS),
+  isWatched: getRandomArrayElement(BOOLEANS),
+  isInWatchlist: getRandomArrayElement(BOOLEANS),
 });

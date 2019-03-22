@@ -1,12 +1,6 @@
 import Component from './component';
-import {EMOJIES, MAX_RATE_NUMBER, FILM_DETAILS_CONTROLS} from './constants';
+import {EMOJIES, MAX_RATE_NUMBER, FILM_DETAILS_CONTROLS, HOUR} from './constants';
 import moment from 'moment';
-
-const EMOJIE = {
-  "neutral-face": `😐`,
-  "grinning": `😀`,
-  "sleeping": `😴`,
-};
 
 class FilmPopup extends Component {
 
@@ -27,6 +21,10 @@ class FilmPopup extends Component {
     this._ageLimit = data.ageLimit;
     this._releaseCountry = data.releaseCountry;
     this._comments = data.comments;
+
+    this._isFavorite = data.isFavorite;
+    this._isWatched = data.isWatched;
+    this._isInWatchlist = data.isInWatchlist;
 
     this._onSetComment = null;
     this._onSetRating = null;
@@ -63,7 +61,6 @@ class FilmPopup extends Component {
     this._score = data.score;
     this._element.querySelector(`.film-details__comments-list`).innerHTML = FilmPopup._onAddComment(this._comments);
     this._element.querySelector(`.film-details__comment-input`).value = ``;
-    this._element.querySelector(`.film-details__user-rating`).textContent = `Your rate ${this._score}`;
   }
 
   _onCommentChange(event) {
@@ -102,7 +99,7 @@ class FilmPopup extends Component {
         <p class="film-details__comment-text">${item.comment}</p>
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${item.userName}</span>
-          <span class="film-details__comment-day">${new Date().getDate() - new Date(item.date).getDate()} days ago</span>
+          <span class="film-details__comment-day">${moment().format(`DD MMMM YYYY`)}</span>
         </p>
       </div>
     </li>`).join(``);
@@ -113,9 +110,9 @@ class FilmPopup extends Component {
     return {
       "comment": (value) => (target.comments.comment = value),
       "comment-emoji": (value) => {
-        target.comments.emoji = EMOJIE[value];
+        target.comments.emoji = EMOJIES[value];
       },
-      "score": (value) => (target.userRating = Number(value)),
+      "score": (value) => (target.score = value),
     };
   }
 
@@ -127,13 +124,14 @@ class FilmPopup extends Component {
         userName: `New user`,
         date: Date.now(),
       },
-      userRating: 0,
+      score: 0,
     };
 
     const filmEditMapper = FilmPopup._createMapper(entry);
 
     Array.from(formData.entries())
-      .forEach(([property, value]) => filmEditMapper[property] && filmEditMapper[property](value));
+      .forEach(([property, value]) =>
+        filmEditMapper[property] && filmEditMapper[property](value));
     return entry;
   }
 
@@ -146,7 +144,7 @@ class FilmPopup extends Component {
       {title: `Actors`, value: this._actors},
       {title: `Release Date`, value: `${moment(this._date).format(`DD MMMM YYYY`)}`},
       {title: `Release Country`, value: this._releaseCountry},
-      {title: `Runtime`, value: `${60 + Number(moment(this._duration).format(`mm`))} min`},
+      {title: `Runtime`, value: `${HOUR + Number(moment(this._duration).format(`mm`))} min`},
       {title: `Country`, value: this._country},
       {title: `Genres`, value: this._genres},
     ];
@@ -211,20 +209,20 @@ class FilmPopup extends Component {
       
             <div class="film-details__new-comment">
               <div>
-                <label for="add-emoji" class="film-details__add-emoji-label">😐</label>
+                <label for="add-emoji" class="film-details__add-emoji-label">${EMOJIES[`neutral-face`]}</label>
                 <input type="checkbox" class="film-details__add-emoji visually-hidden" id="add-emoji">
       
                 <div class="film-details__emoji-list">
-                  ${EMOJIES.map((item, idx) => `<input 
+                  ${Object.keys(EMOJIES).map((item, idx) => `<input 
                     class="film-details__emoji-item visually-hidden" 
                     name="comment-emoji" 
                     type="radio" 
                     ${idx === 0 ? `checked` : ``}
-                    id="emoji-${item.name}" 
-                    value="${item.name}">
+                    id="emoji-${item}" 
+                    value="${item}">
                     <label 
                       class="film-details__emoji-label" 
-                      for="emoji-${item.name}">${item.emoji}</label>`).join(``)}
+                      for="emoji-${item}">${EMOJIES[item]}</label>`).join(``)}
                 </div>
               </div>
               <label class="film-details__comment-label">
@@ -255,7 +253,6 @@ class FilmPopup extends Component {
                     class="film-details__user-rating-input visually-hidden" 
                     value="${idx + 1}" 
                     id="rating-${idx + 1}" 
-                    ${this._score === idx + 1 ? `checked` : ``}
                   ><label class="film-details__user-rating-label" for="rating-${idx + 1}">${idx + 1}</label>`).join(``)}
                 </div>
               </section>
