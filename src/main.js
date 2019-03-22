@@ -10,19 +10,38 @@ const mainFilmsContainer = filmsContainer.querySelector(`.films-list .films-list
 const topRatedFilmsContainer = filmsContainer.querySelector(`.films-list--top-rated .films-list__container`);
 const mostCommentedFilmsContainer = filmsContainer.querySelector(`.films-list--most-commented .films-list__container`);
 
+const filmsSections = [
+  {
+    container: mainFilmsContainer,
+    maxCards: MAIN_BLOCK_MAX_CARDS,
+    showControls: true,
+  },
+  {
+    container: topRatedFilmsContainer,
+    maxCards: EXTRA_BLOCK_MAX_CARDS,
+    showControls: false,
+  },
+  {
+    container: mostCommentedFilmsContainer,
+    maxCards: EXTRA_BLOCK_MAX_CARDS,
+    showControls: false,
+  },
+];
+
+
 const renderFilmsList = (container, amount, showControls) => {
   Array.from({length: amount}).forEach(() => {
     const data = createFilmCard();
-    const card = new FilmCard(data, showControls);
+    const filmCard = new FilmCard(data, showControls);
     const filmPopup = new FilmPopup(data);
 
-    container.appendChild(card.render());
+    container.appendChild(filmCard.render());
 
-    card.onCommentsClick = () => document.body.appendChild(filmPopup.render());
+    filmCard.onCommentsClick = () => document.body.appendChild(filmPopup.render());
 
     filmPopup.onSetComment = (newData) => {
       data.comments.push(newData.comments);
-      card.update(data);
+      filmCard.update(data);
       filmPopup.update(data);
     };
 
@@ -32,15 +51,15 @@ const renderFilmsList = (container, amount, showControls) => {
     };
 
     filmPopup.onClose = () => {
-      card.update(data);
+      filmCard.update(data);
       filmPopup.destroy();
     };
   });
 };
 
-renderFilmsList(mainFilmsContainer, MAIN_BLOCK_MAX_CARDS, true);
-renderFilmsList(topRatedFilmsContainer, EXTRA_BLOCK_MAX_CARDS, false);
-renderFilmsList(mostCommentedFilmsContainer, EXTRA_BLOCK_MAX_CARDS, false);
+filmsSections.forEach((section) =>
+  renderFilmsList(section.container, section.maxCards, section.showControls)
+);
 
 FILTERS.reverse().forEach((filter, index) => {
   const filterItem = Object.assign({}, filter);
