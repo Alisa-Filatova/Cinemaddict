@@ -37,7 +37,21 @@ const renderFilmsList = (container, amount, showControls) => {
 
     container.appendChild(filmCard.render());
 
-    filmCard.onCommentsClick = () => document.body.appendChild(filmPopup.render());
+    filmCard.onCommentsClick = () => {
+      document.body.appendChild(filmPopup.render());
+    };
+
+    filmCard.onAddToWatchList = () => {
+      data.isInWatchlist = !data.isInWatchlist;
+      filmCard.update(data);
+      filmPopup.update(data);
+    };
+
+    filmCard.onMarkAsWatched = () => {
+      data.isWatched = !data.isWatched;
+      filmCard.update(data);
+      filmPopup.update(data);
+    };
 
     filmPopup.onSetComment = (newData) => {
       data.comments.push(newData.comments);

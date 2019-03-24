@@ -31,11 +31,15 @@ class FilmPopup extends Component {
     this._onSetComment = null;
     this._onSetRating = null;
     this._onClose = null;
+    this._onAddToWatchList = null;
+    this._onMarkAsWatched = null;
 
     this._onCloseClick = this._onCloseClick.bind(this);
     this._onCommentChange = this._onCommentChange.bind(this);
     this._onEmojiChange = this._onEmojiChange.bind(this);
     this._onRatingChange = this._onRatingChange.bind(this);
+    this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
+    this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
   }
 
   set onClose(fn) {
@@ -48,6 +52,14 @@ class FilmPopup extends Component {
 
   set onSetRating(fn) {
     this._onSetRating = fn;
+  }
+
+  set onAddToWatchList(fn) {
+    this._onAddToWatchList = fn;
+  }
+
+  set onMarkAsWatched(fn) {
+    this._onMarkAsWatched = fn;
   }
 
   _onCloseClick(event) {
@@ -90,6 +102,23 @@ class FilmPopup extends Component {
       }
     }
   }
+
+  _onAddToWatchListClick(event) {
+    event.preventDefault();
+
+    if (typeof this._onAddToWatchList === `function`) {
+      this._onAddToWatchList();
+    }
+  }
+
+  _onMarkAsWatchedClick(event) {
+    event.preventDefault();
+
+    if (typeof this._onMarkAsWatched === `function`) {
+      this._onMarkAsWatched();
+    }
+  }
+
 
   static _onAddNewComment(comments) {
     return comments.map((item) => `<li class="film-details__comment">
@@ -134,6 +163,8 @@ class FilmPopup extends Component {
   }
 
   update(data) {
+    this._isInWatchlist = data.isInWatchlist;
+    this._isWatched = data.isWatched;
     this._comments = data.comments;
     this._score = data.score;
     this._element.querySelector(`.film-details__comments-list`).innerHTML = FilmPopup._onAddNewComment(this._comments);

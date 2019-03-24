@@ -12,9 +12,20 @@ class FilmCard extends Component {
     this._duration = data.duration;
     this._genre = data.genres;
     this._comments = data.comments;
+    this._score = data.score;
 
+    this._isInWatchlist = data.isInWatchlist;
+    this._isWatched = data.isWatched;
+    this._isFavorite = data.isFavorite;
     this._showControls = showControls;
-    this._onCommentsClick = this._onCommentsBtnClick;
+
+    this._onCommentsClick = null;
+    this._onAddToWatchList = null;
+    this._onMarkAsWatched = null;
+
+    this._onCommentsBtnClick = this._onCommentsBtnClick.bind(this);
+    this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
+    this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
   }
 
   _onCommentsBtnClick(event) {
@@ -22,6 +33,22 @@ class FilmCard extends Component {
 
     if (typeof this._onCommentsClick === `function`) {
       this._onCommentsClick();
+    }
+  }
+
+  _onAddToWatchListClick(event) {
+    event.preventDefault();
+
+    if (typeof this._onAddToWatchList === `function`) {
+      this._onAddToWatchList();
+    }
+  }
+
+  _onMarkAsWatchedClick(event) {
+    event.preventDefault();
+
+    if (typeof this._onMarkAsWatched === `function`) {
+      this._onMarkAsWatched();
     }
   }
 
@@ -37,7 +64,17 @@ class FilmCard extends Component {
     this._onCommentsClick = fn;
   }
 
+  set onAddToWatchList(fn) {
+    this._onAddToWatchList = fn;
+  }
+
+  set onMarkAsWatched(fn) {
+    this._onMarkAsWatched = fn;
+  }
+
   update(data) {
+    this._isInWatchlist = data.isInWatchlist;
+    this._isWatched = data.isWatched;
     this._comments = data.comments;
     this._updateCommentsCount();
   }
@@ -55,18 +92,22 @@ class FilmCard extends Component {
         <img src="${this._poster}" alt="${this._title}" class="film-card__poster">
         <p class="film-card__description">${this._description}</p>
         <button class="film-card__comments">${this._commentsCountTemplate()}</button>
-        ${this._showControls ? `<form class="film-card__controls">
+        <form class="film-card__controls ${this._showControls ? `` : `visually-hidden`}">
           <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist"><!--Add to watchlist--> WL</button>
           <button class="film-card__controls-item button film-card__controls-item--mark-as-watched"><!--Mark as watched-->WTCHD</button>
           <button class="film-card__controls-item button film-card__controls-item--favorite"><!--Mark as favorite-->FAV</button>
-        </form>` : ``}
+        </form>
       </article>`
     );
   }
 
   addEventListeners() {
     this._element.querySelector(`.film-card__comments`)
-      .addEventListener(`click`, this._onCommentsBtnClick.bind(this));
+      .addEventListener(`click`, this._onCommentsBtnClick);
+    this._element.querySelector(`.film-card__controls-item--add-to-watchlist`)
+      .addEventListener(`click`, this._onAddToWatchListClick);
+    this._element.querySelector(`.film-card__controls-item--mark-as-watched`)
+      .addEventListener(`click`, this._onMarkAsWatchedClick);
   }
 }
 
