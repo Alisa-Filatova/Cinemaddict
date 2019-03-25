@@ -1,6 +1,6 @@
-import drawFilter from './draw-filter';
 import FilmCard from './film-card';
 import FilmPopup from './film-popup';
+import Filter from './filter';
 import {generateRandomNumber, createFilmCard} from './utils';
 import {FILTERS, MAIN_BLOCK_MAX_CARDS, MAX_FILMS_COUNT, EXTRA_BLOCK_MAX_CARDS} from './constants';
 
@@ -99,29 +99,44 @@ filmsSections.forEach((section) =>
   renderFilmsList(section.container, section.maxCards, section.showControls)
 );
 
-FILTERS.reverse().forEach((filter, index) => {
-  const filterItem = Object.assign({}, filter);
+const renderFilters = (container, filters, count) => {
+  filters.reverse().forEach((item, idx) => {
+    const filter = new Filter(item, idx === filters.length - 1 ? null : count);
+    container.insertAdjacentElement(`afterbegin`, filter.render());
 
-  filterItem.count = index === FILTERS.length - 1 ? null : generateRandomNumber(MAX_FILMS_COUNT);
-
-  mainNavigation.insertAdjacentHTML(`afterbegin`, drawFilter(filterItem));
-});
-
-const onFilterItemClick = (event) => {
-  event.preventDefault();
-
-  if (!event.currentTarget.classList.contains(`main-navigation__item--additional`)) {
-    const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
-    const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
-
-    activeItem.classList.remove(`main-navigation__item--active`);
-    event.currentTarget.classList.add(`main-navigation__item--active`);
-
-    filmCards.forEach((item) => item.remove());
-    renderFilmsList(mainFilmsContainer, generateRandomNumber(MAIN_BLOCK_MAX_CARDS));
-  }
+    filter.onFilter = () => {
+      const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+      filmCards.forEach((card) => card.remove());
+      renderFilmsList(mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
+    };
+  });
 };
 
-mainNavigation
-  .querySelectorAll(`.main-navigation__item`)
-  .forEach((filterItem) => filterItem.addEventListener(`click`, onFilterItemClick));
+renderFilters(mainNavigation, FILTERS, generateRandomNumber(MAX_FILMS_COUNT));
+// //
+// FILTERS.reverse().forEach((filter, index) => {
+//   const filterItem = Object.assign({}, filter);
+//
+//   filterItem.count = index === FILTERS.length - 1 ? null : generateRandomNumber(MAX_FILMS_COUNT);
+//
+//   mainNavigation.insertAdjacentHTML(`afterbegin`, drawFilter(filterItem));
+// });
+
+// const onFilterItemClick = (event) => {
+//   event.preventDefault();
+//
+//   if (!event.currentTarget.classList.contains(`main-navigation__item--additional`)) {
+//     const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
+//     const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+//
+//     activeItem.classList.remove(`main-navigation__item--active`);
+//     event.currentTarget.classList.add(`main-navigation__item--active`);
+//
+//     filmCards.forEach((item) => item.remove());
+//     renderFilmsList(mainFilmsContainer, generateRandomNumber(MAIN_BLOCK_MAX_CARDS));
+//   }
+// };
+
+// mainNavigation
+//   .querySelectorAll(`.main-navigation__item`)
+//   .forEach((filterItem) => filterItem.addEventListener(`click`, onFilterItemClick));

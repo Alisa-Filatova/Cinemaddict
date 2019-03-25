@@ -108,8 +108,7 @@ class FilmCard extends Component {
         <p class="film-card__description">${this._description}</p>
         <button class="film-card__comments">${this._commentsCountTemplate()}</button>
         <form class="film-card__controls ${this._showControls ? `` : `visually-hidden`}">
-          <button 
-            class="film-card__controls-item button film-card__controls-item--add-to-watchlist ${this._isInWatchlist ? `film-card__controls-item--active` : ``}">
+          <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist ${this._isInWatchlist ? `film-card__controls-item--active` : ``}">
             <!--Add to watchlist--> WL
           </button>
           <button class="film-card__controls-item button film-card__controls-item--mark-as-watched ${this._isWatched ? `film-card__controls-item--active` : ``}">
@@ -118,8 +117,8 @@ class FilmCard extends Component {
           <button class="film-card__controls-item button film-card__controls-item--favorite ${this._isFavorite ? `film-card__controls-item--active` : ``}">
             <!--Mark as favorite-->FAV
           </button>
-          </form>
-        </article>`
+        </form>
+      </article>`
     );
   }
 

@@ -11,22 +11,5 @@ export const EMOJIES = {
   "grinning": `😀`,
 };
 
-export const FILTERS = [
-  {
-    name: `All movies`,
-    active: true,
-  },
-  {
-    name: `Watchlist`,
-    active: false,
-  },
-  {
-    name: `History`,
-    active: false,
-  },
-  {
-    name: `Favorites`,
-    active: false,
-  },
-];
+export const FILTERS = [`All movies`, `Watchlist`, `History`, `Favorites`];
 
