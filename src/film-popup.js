@@ -31,15 +31,19 @@ class FilmPopup extends Component {
     this._onSetComment = null;
     this._onSetRating = null;
     this._onClose = null;
+
     this._onAddToWatchList = null;
     this._onMarkAsWatched = null;
+    this._onAddToFavorite = null;
 
     this._onCloseClick = this._onCloseClick.bind(this);
     this._onCommentChange = this._onCommentChange.bind(this);
     this._onEmojiChange = this._onEmojiChange.bind(this);
     this._onRatingChange = this._onRatingChange.bind(this);
+
     this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
     this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
+    this._onAddToFavoriteClick = this._onAddToFavoriteClick.bind(this);
   }
 
   set onClose(fn) {
@@ -60,6 +64,10 @@ class FilmPopup extends Component {
 
   set onMarkAsWatched(fn) {
     this._onMarkAsWatched = fn;
+  }
+
+  set onAddToFavorite(fn) {
+    this._onAddToFavorite = fn;
   }
 
   _onCloseClick(event) {
@@ -119,6 +127,13 @@ class FilmPopup extends Component {
     }
   }
 
+  _onAddToFavoriteClick(event) {
+    event.preventDefault();
+
+    if (typeof this._onAddToFavorite === `function`) {
+      this._onAddToFavorite();
+    }
+  }
 
   static _onAddNewComment(comments) {
     return comments.map((item) => `<li class="film-details__comment">
@@ -165,6 +180,7 @@ class FilmPopup extends Component {
   update(data) {
     this._isInWatchlist = data.isInWatchlist;
     this._isWatched = data.isWatched;
+    this._isFavorite = data.isFavorite;
     this._comments = data.comments;
     this._score = data.score;
     this._element.querySelector(`.film-details__comments-list`).innerHTML = FilmPopup._onAddNewComment(this._comments);
@@ -303,6 +319,12 @@ class FilmPopup extends Component {
       .addEventListener(`change`, this._onEmojiChange);
     this._element.querySelector(`form`)
       .addEventListener(`change`, this._onRatingChange);
+    this._element.querySelector(`#watchlist`)
+      .addEventListener(`change`, this._onAddToWatchListClick);
+    this._element.querySelector(`#watched`)
+      .addEventListener(`change`, this._onMarkAsWatchedClick);
+    this._element.querySelector(`#favorite`)
+      .addEventListener(`change`, this._onAddToFavoriteClick);
   }
 
   removeEventListeners() {
@@ -314,6 +336,12 @@ class FilmPopup extends Component {
       .removeEventListener(`change`, this._onEmojiChange);
     this._element.querySelector(`form`)
       .removeEventListener(`change`, this._onRatingChange);
+    this._element.querySelector(`#watchlist`)
+      .removeEventListener(`change`, this._onAddToWatchListClick);
+    this._element.querySelector(`#watched`)
+      .removeEventListener(`change`, this._onMarkAsWatchedClick);
+    this._element.querySelector(`#favorite`)
+      .removeEventListener(`change`, this._onAddToFavoriteClick);
   }
 }
 

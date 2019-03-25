@@ -22,10 +22,12 @@ class FilmCard extends Component {
     this._onCommentsClick = null;
     this._onAddToWatchList = null;
     this._onMarkAsWatched = null;
+    this._onAddToFavorite = null;
 
     this._onCommentsBtnClick = this._onCommentsBtnClick.bind(this);
     this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
     this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
+    this._onAddToFavoriteClick = this._onAddToFavoriteClick.bind(this);
   }
 
   _onCommentsBtnClick(event) {
@@ -52,6 +54,14 @@ class FilmCard extends Component {
     }
   }
 
+  _onAddToFavoriteClick(event) {
+    event.preventDefault();
+
+    if (typeof this._onAddToFavorite === `function`) {
+      this._onAddToFavorite();
+    }
+  }
+
   _commentsCountTemplate() {
     return `${this._comments.length} comment${this._comments.length > 1 ? `s` : ``}`;
   }
@@ -72,9 +82,14 @@ class FilmCard extends Component {
     this._onMarkAsWatched = fn;
   }
 
+  set onAddToFavorite(fn) {
+    this._onAddToFavorite = fn;
+  }
+
   update(data) {
     this._isInWatchlist = data.isInWatchlist;
     this._isWatched = data.isWatched;
+    this._isFavorite = data.isFavorite;
     this._comments = data.comments;
     this._updateCommentsCount();
   }
@@ -93,11 +108,18 @@ class FilmCard extends Component {
         <p class="film-card__description">${this._description}</p>
         <button class="film-card__comments">${this._commentsCountTemplate()}</button>
         <form class="film-card__controls ${this._showControls ? `` : `visually-hidden`}">
-          <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist"><!--Add to watchlist--> WL</button>
-          <button class="film-card__controls-item button film-card__controls-item--mark-as-watched"><!--Mark as watched-->WTCHD</button>
-          <button class="film-card__controls-item button film-card__controls-item--favorite"><!--Mark as favorite-->FAV</button>
-        </form>
-      </article>`
+          <button 
+            class="film-card__controls-item button film-card__controls-item--add-to-watchlist ${this._isInWatchlist ? `film-card__controls-item--active` : ``}">
+            <!--Add to watchlist--> WL
+          </button>
+          <button class="film-card__controls-item button film-card__controls-item--mark-as-watched ${this._isWatched ? `film-card__controls-item--active` : ``}">
+            <!--Mark as watched-->WTCHD
+          </button>
+          <button class="film-card__controls-item button film-card__controls-item--favorite ${this._isFavorite ? `film-card__controls-item--active` : ``}">
+            <!--Mark as favorite-->FAV
+          </button>
+          </form>
+        </article>`
     );
   }
 
@@ -107,6 +129,8 @@ class FilmCard extends Component {
     this._element.querySelector(`.film-card__controls-item--add-to-watchlist`)
       .addEventListener(`click`, this._onAddToWatchListClick);
     this._element.querySelector(`.film-card__controls-item--mark-as-watched`)
+      .addEventListener(`click`, this._onMarkAsWatchedClick);
+    this._element.querySelector(`.film-card__controls-item--favorite`)
       .addEventListener(`click`, this._onMarkAsWatchedClick);
   }
 }

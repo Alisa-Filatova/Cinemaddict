@@ -14,22 +14,18 @@ export const EMOJIES = {
 export const FILTERS = [
   {
     name: `All movies`,
-    link: `#all`,
     active: true,
   },
   {
     name: `Watchlist`,
-    link: `#watchlist`,
     active: false,
   },
   {
     name: `History`,
-    link: `#history`,
     active: false,
   },
   {
     name: `Favorites`,
-    link: `#favorites`,
     active: false,
   },
 ];

@@ -28,7 +28,6 @@ const filmsSections = [
   },
 ];
 
-
 const renderFilmsList = (container, amount, showControls) => {
   Array.from({length: amount}).forEach(() => {
     const data = createFilmCard();
@@ -53,6 +52,12 @@ const renderFilmsList = (container, amount, showControls) => {
       filmPopup.update(data);
     };
 
+    filmCard.onAddToFavorite = () => {
+      data.isFavorite = !data.isFavorite;
+      filmCard.update(data);
+      filmPopup.update(data);
+    };
+
     filmPopup.onSetComment = (newData) => {
       data.comments.push(newData.comments);
       filmCard.update(data);
@@ -61,6 +66,25 @@ const renderFilmsList = (container, amount, showControls) => {
 
     filmPopup.onSetRating = (newData) => {
       data.score = newData.score;
+      filmCard.update(data);
+      filmPopup.update(data);
+    };
+
+    filmPopup.onAddToWatchList = () => {
+      data.isInWatchlist = !data.isInWatchlist;
+      filmCard.update(data);
+      filmPopup.update(data);
+    };
+
+    filmPopup.onMarkAsWatched = () => {
+      data.isWatched = !data.isWatched;
+      filmCard.update(data);
+      filmPopup.update(data);
+    };
+
+    filmPopup.onAddToFavorite = () => {
+      data.isFavorite = !data.isFavorite;
+      filmCard.update(data);
       filmPopup.update(data);
     };
 
