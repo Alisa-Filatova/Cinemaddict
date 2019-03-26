@@ -3,12 +3,16 @@ import FilmPopup from './film-popup';
 import Filter from './filter';
 import {generateRandomNumber, createFilmCard} from './utils';
 import {FILTERS, MAIN_BLOCK_MAX_CARDS, MAX_FILMS_COUNT, EXTRA_BLOCK_MAX_CARDS} from './constants';
+import Statistic from './statistics';
 
+const HIDDEN_CLASS = `visually-hidden`;
 const mainNavigation = document.querySelector(`.main-navigation`);
 const filmsContainer = document.querySelector(`.films`);
 const mainFilmsContainer = filmsContainer.querySelector(`.films-list .films-list__container`);
 const topRatedFilmsContainer = filmsContainer.querySelector(`.films-list--top-rated .films-list__container`);
 const mostCommentedFilmsContainer = filmsContainer.querySelector(`.films-list--most-commented .films-list__container`);
+const statisticContainer = document.querySelector(`.statistic`);
+const statisticButton = document.querySelector(`.main-navigation__item--additional`);
 
 const filmsSections = [
   {
@@ -99,9 +103,9 @@ filmsSections.forEach((section) =>
   renderFilmsList(section.container, section.maxCards, section.showControls)
 );
 
-const renderFilters = (container, filters, count) => {
+const renderFilters = (container, filters) => {
   filters.reverse().forEach((item, idx) => {
-    const filter = new Filter(item, idx === filters.length - 1 ? null : count);
+    const filter = new Filter(item, idx === filters.length - 1 ? null : generateRandomNumber(MAX_FILMS_COUNT));
     container.insertAdjacentElement(`afterbegin`, filter.render());
 
     filter.onFilter = () => {
@@ -112,31 +116,41 @@ const renderFilters = (container, filters, count) => {
   });
 };
 
-renderFilters(mainNavigation, FILTERS, generateRandomNumber(MAX_FILMS_COUNT));
-// //
-// FILTERS.reverse().forEach((filter, index) => {
-//   const filterItem = Object.assign({}, filter);
-//
-//   filterItem.count = index === FILTERS.length - 1 ? null : generateRandomNumber(MAX_FILMS_COUNT);
-//
-//   mainNavigation.insertAdjacentHTML(`afterbegin`, drawFilter(filterItem));
-// });
+renderFilters(mainNavigation, FILTERS);
 
-// const onFilterItemClick = (event) => {
-//   event.preventDefault();
-//
-//   if (!event.currentTarget.classList.contains(`main-navigation__item--additional`)) {
-//     const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
-//     const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
-//
-//     activeItem.classList.remove(`main-navigation__item--active`);
-//     event.currentTarget.classList.add(`main-navigation__item--active`);
-//
-//     filmCards.forEach((item) => item.remove());
-//     renderFilmsList(mainFilmsContainer, generateRandomNumber(MAIN_BLOCK_MAX_CARDS));
-//   }
-// };
+const generateFilmsData = (amount) => {
+  let filmsTemplate = [];
+  for (let i = 0; i < amount; i++) {
+    filmsTemplate.push(createFilmCard());
+  }
+  return filmsTemplate;
+};
 
-// mainNavigation
-//   .querySelectorAll(`.main-navigation__item`)
-//   .forEach((filterItem) => filterItem.addEventListener(`click`, onFilterItemClick));
+const filmsData = generateFilmsData(MAIN_BLOCK_MAX_CARDS);
+
+const showStatistic = () => {
+  statisticContainer.innerHTML = ``;
+  filmsContainer.classList.add(HIDDEN_CLASS);
+  const statisticComponent = new Statistic(filmsData);
+  statisticContainer.appendChild(statisticComponent.render());
+};
+
+statisticButton.addEventListener(`click`, showStatistic);
+
+const onFilterItemClick = (event) => {
+  event.preventDefault();
+
+  if (!event.currentTarget.classList.contains(`main-navigation__item--additional`)) {
+    const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+    event.currentTarget.classList.add(`main-navigation__item--active`);
+    const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
+    activeItem.classList.remove(`main-navigation__item--active`);
+
+    filmCards.forEach((item) => item.remove());
+    renderFilmsList(mainFilmsContainer, generateRandomNumber(MAIN_BLOCK_MAX_CARDS));
+  }
+};
+
+mainNavigation
+  .querySelectorAll(`.main-navigation__item`)
+  .forEach((filterItem) => filterItem.addEventListener(`click`, onFilterItemClick));

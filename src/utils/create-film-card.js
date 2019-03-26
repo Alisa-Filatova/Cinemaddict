@@ -40,7 +40,7 @@ const POSTERS = [
   `three-friends`,
 ];
 
-const GENRES = [`Comedy`, `Action`, `Fantasy`, `Epic`, `History`, `Dram`];
+const GENRES = [`Comedy`, `Action`, `Fantasy`, `Epic`, `History`];
 const DIRECTORS = [`Steven Spielberg`, `Peter Jackson`, `Paul Anderson`, `James Cameron`, `Tim Burton`];
 const WRITERS = [`Christopher Nolan`, `Luc Besson`, `Martin Scorsese`, `Guy Richie`, `Stephen King`];
 const ACTORS = [`Brad Pitt`, `Hugh Laurie`, `Nichole Kidman`, `Jhonny Depp`, `Jim Carrey`, `Kate Winslet`];
@@ -102,6 +102,7 @@ export const createFilmCard = () => ({
       .slice(0, generateRandomNumber(ACTORS.length))
       .join(`, `),
   rating: getRandomInteger(MAX_RATE_NUMBER).toFixed(1),
+  userRating: Date.now() + generateRandomNumber(1, -Time.MONTH) * Time.DAY * Time.HOUR * Time.MINUTE * Time.SECOND,
   score: generateRandomNumber(MAX_RATE_NUMBER),
   releaseDate: Date.now() + getRandomInteger(Time.YEAR, (-Time.YEAR) * 15) * getRandomInteger(Time.DAY),
   country: getRandomArrayElement(COUNTRIES),

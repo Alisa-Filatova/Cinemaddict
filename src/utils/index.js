@@ -4,6 +4,7 @@ import {generateRandomNumber} from './generate-random-number';
 import {getRandomArrayElement} from './get-random-array-element';
 import {getRandomInteger} from './get-random-integer';
 import {createFilmCard} from './create-film-card';
+import {isNumeric} from './is-numeric';
 
 export {
   compareRandom,
@@ -12,4 +13,5 @@ export {
   getRandomArrayElement,
   getRandomInteger,
   createFilmCard,
+  isNumeric,
 };

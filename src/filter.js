@@ -28,18 +28,17 @@ class Filter extends Component {
 
   get template() {
     return `<a href="" class="main-navigation__item ${this._state.active ? `main-navigation__item--active` : ``}">
-      ${this._title} ${this._count === null ? `` : `<span class="main-navigation__item-count"> ${this._count}</span>`}</a>`;
+      ${this._title} ${this._count === null ? `` : `<span class="main-navigation__item-count">${this._count}</span>`}
+    </a>`;
   }
 
-  // addEventListeners() {
-  //   this._element.querySelector(`.main-navigation__item`)
-  //     .addEventListener(`click`, this._onFilterClick);
-  // }
-	//
-  // removeEventListeners() {
-  //   this._element.querySelector(`.main-navigation__item`)
-  //     .removeEventListener(`click`, this._onFilterClick);
-  // }
+  addEventListeners() {
+    this._element.addEventListener(`click`, this._onFilterClick);
+  }
+
+  removeEventListeners() {
+    this._element.removeEventListener(`click`, this._onFilterClick);
+  }
 }
 
 export default Filter;
