@@ -1,11 +1,17 @@
 import FilmCard from './film-card';
 import FilmPopup from './film-popup';
 import Filter from './filter';
-import {generateRandomNumber, createFilmCard} from './utils';
-import {FILTERS, MAIN_BLOCK_MAX_CARDS, MAX_FILMS_COUNT, EXTRA_BLOCK_MAX_CARDS} from './constants';
 import Statistic from './statistics';
+import {createFilmCard} from './utils';
+import {MAIN_BLOCK_MAX_CARDS, HIDDEN_CLASS, EXTRA_BLOCK_MAX_CARDS} from './constants';
 
-const HIDDEN_CLASS = `visually-hidden`;
+export const filtersData = [
+  {title: `All movies`, type: `all`, count: null, isActive: true},
+  {title: `Watchlist`, type: `watchlist`, count: null, isActive: false},
+  {title: `History`, type: `history`, count: null, isActive: false},
+  {title: `Favorites`, type: `favorites`, count: null, isActive: false},
+];
+
 const mainNavigation = document.querySelector(`.main-navigation`);
 const filmsContainer = document.querySelector(`.films`);
 const mainFilmsContainer = filmsContainer.querySelector(`.films-list .films-list__container`);
@@ -14,7 +20,7 @@ const mostCommentedFilmsContainer = filmsContainer.querySelector(`.films-list--m
 const statisticContainer = document.querySelector(`.statistic`);
 const statisticButton = document.querySelector(`.main-navigation__item--additional`);
 
-const filmsSections = [
+const extraFilmsSections = [
   {
     container: topRatedFilmsContainer,
     maxCards: EXTRA_BLOCK_MAX_CARDS,
@@ -36,74 +42,10 @@ const getFilmsData = (amount) => {
 };
 
 const mainFilmsData = getFilmsData(MAIN_BLOCK_MAX_CARDS);
+const extraFilmsData = getFilmsData(EXTRA_BLOCK_MAX_CARDS);
 
-mainFilmsData.forEach((item) => {
-  const filmCard = new FilmCard(item, true);
-  const filmPopup = new FilmPopup(item);
-
-  mainFilmsContainer.appendChild(filmCard.render());
-
-  filmCard.onCommentsClick = () => {
-    document.body.appendChild(filmPopup.render());
-  };
-
-  filmCard.onAddToWatchList = () => {
-    item.isInWatchlist = !item.isInWatchlist;
-    filmCard.update(item);
-    filmPopup.update(item);
-  };
-
-  filmCard.onMarkAsWatched = () => {
-    item.isWatched = !item.isWatched;
-    filmCard.update(item);
-    filmPopup.update(item);
-  };
-
-  filmCard.onAddToFavorite = () => {
-    item.isFavorite = !item.isFavorite;
-    filmCard.update(item);
-    filmPopup.update(item);
-  };
-
-  filmPopup.onSetComment = (newData) => {
-    item.comments.push(newData.comments);
-    filmCard.update(item);
-    filmPopup.update(item);
-  };
-
-  filmPopup.onSetRating = (newData) => {
-    item.score = newData.score;
-    filmCard.update(item);
-    filmPopup.update(item);
-  };
-
-  filmPopup.onAddToWatchList = () => {
-    item.isInWatchlist = !item.isInWatchlist;
-    filmCard.update(item);
-    filmPopup.update(item);
-  };
-
-  filmPopup.onMarkAsWatched = () => {
-    item.isWatched = !item.isWatched;
-    filmCard.update(item);
-    filmPopup.update(item);
-  };
-
-  filmPopup.onAddToFavorite = () => {
-    item.isFavorite = !item.isFavorite;
-    filmCard.update(item);
-    filmPopup.update(item);
-  };
-
-  filmPopup.onClose = () => {
-    filmCard.update(item);
-    filmPopup.destroy();
-  };
-});
-
-const renderFilmsList = (films, container, amount, showControls) => {
-  films.forEach(() => {
-    const data = createFilmCard();
+const renderFilmsList = (films, container, showControls) => {
+  films.forEach((data) => {
     const filmCard = new FilmCard(data, showControls);
     const filmPopup = new FilmPopup(data);
 
@@ -168,30 +110,52 @@ const renderFilmsList = (films, container, amount, showControls) => {
   });
 };
 
-filmsSections.forEach((section) =>
-  renderFilmsList(getFilmsData(section.maxCards), section.container, section.showControls)
+renderFilmsList(mainFilmsData, mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
+
+extraFilmsSections.forEach((section) =>
+  renderFilmsList(extraFilmsData, section.container, section.showControls)
 );
 
+const countFilmsWithStatus = (films, status) => films.filter((film) => film[status]).length;
+const filterMainFilmsByType = (type) => renderFilmsList(mainFilmsData.filter((film) =>
+  film[type]), mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
+
 const renderFilters = (container, filters) => {
-  filters.reverse().forEach((item, idx) => {
-    const filter = new Filter(item, idx === filters.length - 1 ? null : generateRandomNumber(MAX_FILMS_COUNT));
+  filters.reverse().forEach((filterItem) => {
+    const filterData = Object.assign(filterItem);
+
+    if (filterData.type === `watchlist`) {
+      filterData.count = countFilmsWithStatus(mainFilmsData, `isInWatchlist`);
+    } else if (filterData.type === `history`) {
+      filterData.count = countFilmsWithStatus(mainFilmsData, `isWatched`);
+    } else if (filterData.type === `favorites`) {
+      filterData.count = countFilmsWithStatus(mainFilmsData, `isFavorite`);
+    }
+
+    const filter = new Filter(filterData);
+
     container.insertAdjacentElement(`afterbegin`, filter.render());
 
     filter.onFilter = () => {
-      switch (filter.title) {
-        case `Watchlist`:
-          return mainFilmsData.filter((it) => it.isInWatchlist);
-        case `History`:
-          return mainFilmsData.filter((it) => it.isWatched);
-        case `Favorite`:
-          return mainFilmsData.filter((it) => it.isFavorite);
-        default: return mainFilmsData;
+      const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+      filmCards.forEach((card) => card.remove());
+      filterData.isActive = !filterData.isActive;
+      filter.update(filterData);
+
+      if (filterItem.type === `watchlist`) {
+        filterMainFilmsByType(`isInWatchlist`);
+      } else if (filterItem.type === `history`) {
+        filterMainFilmsByType(`isWatched`);
+      } else if (filterItem.type === `favorites`) {
+        filterMainFilmsByType(`isFavorite`);
+      } else {
+        renderFilmsList(mainFilmsData, mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
       }
     };
   });
 };
 
-renderFilters(mainNavigation, FILTERS);
+renderFilters(mainNavigation, filtersData);
 
 const showStatistic = () => {
   statisticContainer.innerHTML = ``;
@@ -201,21 +165,3 @@ const showStatistic = () => {
 };
 
 statisticButton.addEventListener(`click`, showStatistic);
-
-// const onFilterItemClick = (event) => {
-//   event.preventDefault();
-//
-//   if (!event.currentTarget.classList.contains(`main-navigation__item--additional`)) {
-//     const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
-//     event.currentTarget.classList.add(`main-navigation__item--active`);
-//     const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
-//     activeItem.classList.remove(`main-navigation__item--active`);
-//
-//     filmCards.forEach((item) => item.remove());
-//     renderFilmsList(mainFilmsContainer, generateRandomNumber(MAIN_BLOCK_MAX_CARDS));
-//   }
-// };
-//
-// mainNavigation
-//   .querySelectorAll(`.main-navigation__item`)
-//   .forEach((filterItem) => filterItem.addEventListener(`click`, onFilterItemClick));

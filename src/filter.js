@@ -1,17 +1,16 @@
 import Component from './component';
 
 class Filter extends Component {
-  constructor(title, count = 0) {
+  constructor(data) {
     super();
-    this._title = title;
-    this._count = count;
-
-    this._state = {
-      active: false,
-    };
+    this._title = data.title;
+    this._count = data.count;
+    this._isActive = data.isActive;
+    this._type = data.type;
 
     this._onFilter = null;
     this._onFilterClick = this._onFilterClick.bind(this);
+    this._onChangeActive = this._onChangeActive.bind(this);
   }
 
   _onFilterClick(event) {
@@ -22,22 +21,43 @@ class Filter extends Component {
     }
   }
 
+  _onChangeActive() {
+    this._isActive = !this._isActive;
+    this.removeEventListeners();
+
+    if (this._isActive) {
+      this._element.classList.remove(`main-navigation__item--active`);
+    } else {
+      this._element.classList.add(`main-navigation__item--active`);
+    }
+
+    this.addEventListeners();
+  }
+
   set onFilter(fn) {
-    this._onFilterClick = fn;
+    this._onFilter = fn;
+  }
+
+  update(data) {
+    this._isActive = data.isActive;
+    this._count = data.count;
+    // this._element.querySelector(`.main-navigation__item-count`).textContent = `${this._count}`;
   }
 
   get template() {
-    return `<a href="" class="main-navigation__item ${this._state.active ? `main-navigation__item--active` : ``}">
+    return `<a href="" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">
       ${this._title} ${this._count === null ? `` : `<span class="main-navigation__item-count">${this._count}</span>`}
     </a>`;
   }
 
   addEventListeners() {
     this._element.addEventListener(`click`, this._onFilterClick);
+    this._element.addEventListener(`click`, this._onChangeActive);
   }
 
   removeEventListeners() {
     this._element.removeEventListener(`click`, this._onFilterClick);
+    this._element.removeEventListener(`click`, this._onChangeActive);
   }
 }
 
