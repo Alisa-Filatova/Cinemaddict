@@ -32,13 +32,14 @@ class Filter extends Component {
   update(data) {
     this._isActive = data.isActive;
     this._count = data.count;
-    // this._element.querySelector(`.main-navigation__item-count`).textContent = `${this._count}`;
   }
 
   get template() {
-    return `<a href="" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">
-      ${this._title} ${this._count === null ? `` : `<span class="main-navigation__item-count">${this._count}</span>`}
-    </a>`;
+    return (
+      `<a href="" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">
+        ${this._title} ${this._count === null ? `` : `<span class="main-navigation__item-count">${this._count}</span>`}
+      </a>`
+    );
   }
 
   addEventListeners() {

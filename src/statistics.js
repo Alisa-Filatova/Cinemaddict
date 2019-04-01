@@ -1,39 +1,47 @@
-import Component from './component';
-import {createElement, isNumeric} from './utils';
 import moment from 'moment';
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import Component from './component';
+import {createElement, isNumeric} from './utils';
 
 class Statistic extends Component {
-
   constructor(films) {
     super();
     this._films = films;
     this._watchedFilms = this._films.filter((film) => film.isWatched);
-    this._filteringFilms = this._watchedFilms;
+    this._filteredFilms = this._watchedFilms;
     this._chart = null;
 
-    this._filterByTime = this._filterByTime.bind(this);
+    this._filterByPeriod = this._filterByPeriod.bind(this);
   }
 
-  _filterByTime() {
+  _filterByPeriod() {
     const filter = this._element.querySelector(`.statistic__filters-input:checked`).value;
 
     switch (filter) {
       case `all-time`:
-        this._filteringFilms = this._watchedFilms;
+        this._filteredFilms = this._watchedFilms;
         break;
       case `today`:
-        this._filteringFilms = this._watchedFilms.filter((film) => moment(film.userRating).format(`D MMMM YYYY`) === moment().format(`D MMMM YYYY`));
+        this._filteredFilms = this._watchedFilms
+          .filter((film) => moment(film.userRating)
+          .format(`D MMMM YYYY`) === moment()
+          .format(`D MMMM YYYY`));
         break;
       case `week`:
-        this._filteringFilms = this._watchedFilms.filter((film) => moment(film.userRating) > moment().subtract(1, `w`));
+        this._filteredFilms = this._watchedFilms
+          .filter((film) => moment(film.userRating) > moment()
+          .subtract(1, `w`));
         break;
       case `month`:
-        this._filteringFilms = this._watchedFilms.filter((film) => moment(film.userRating) > moment().subtract(1, `months`));
+        this._filteredFilms = this._watchedFilms
+          .filter((film) => moment(film.userRating) > moment()
+          .subtract(1, `months`));
         break;
       case `year`:
-        this._filteringFilms = this._watchedFilms.filter((film) => moment(film.userRating) > moment().subtract(1, `y`));
+        this._filteredFilms = this._watchedFilms
+          .filter((film) => moment(film.userRating) > moment()
+          .subtract(1, `y`));
         break;
     }
 
@@ -43,7 +51,7 @@ class Statistic extends Component {
   _filterByGenre() {
     let filteredFilms = {};
 
-    this._filteringFilms.forEach((film) => {
+    this._filteredFilms.forEach((film) => {
       film.genres.map((genre) => {
         filteredFilms[genre] = isNumeric(filteredFilms[genre]) ? filteredFilms[genre] + 1 : 1;
       });
@@ -56,9 +64,9 @@ class Statistic extends Component {
   }
 
   _generateCharts() {
-    const [genreLabels, genreAmounts] = this._filterByGenre();
-    const statisticWrapper = this._element.querySelector(`.statistic__chart`);
     const BAR_HEIGHT = 50;
+    const statisticWrapper = this._element.querySelector(`.statistic__chart`);
+    const [genreLabels, genreAmounts] = this._filterByGenre();
     statisticWrapper.height = BAR_HEIGHT * genreLabels.length;
 
     this._chart = new Chart(statisticWrapper, this._getChart());
@@ -84,10 +92,8 @@ class Statistic extends Component {
       options: {
         plugins: {
           datalabels: {
-            font: {
-              size: 20
-            },
-            color: `#ffffff`,
+            font: {size: 20},
+            color: `#fff`,
             anchor: `start`,
             align: `start`,
             offset: 40,
@@ -96,7 +102,7 @@ class Statistic extends Component {
         scales: {
           yAxes: [{
             ticks: {
-              fontColor: `#ffffff`,
+              fontColor: `#fff`,
               padding: 100,
               fontSize: 20
             },
@@ -117,19 +123,20 @@ class Statistic extends Component {
             },
           }],
         },
-        legend: {
-          display: false
-        },
-        tooltips: {
-          enabled: false
-        }
+        legend: {display: false},
+        tooltips: {enabled: false}
       }
     };
   }
 
-  _getFilmsDurationTemplate() {
-    const totalDuration = this._filteringFilms.reduce((duration, film) => duration + film.duration, 0);
-    return `${moment.duration(totalDuration).hours()} <span class="statistic__item-description">h</span> ${moment.duration(totalDuration).minutes()} <span class="statistic__item-description">m</span>`;
+  _getFilmsRuntimeTemplate() {
+    const totalDuration = this._filteredFilms.reduce((duration, film) => duration + film.duration, 0);
+    return (
+      `${moment.duration(totalDuration).hours()} 
+       <span class="statistic__item-description">h</span> 
+       ${moment.duration(totalDuration).minutes()} 
+       <span class="statistic__item-description">m</span>`
+    );
   }
 
   _getTopGenresTemplate() {
@@ -137,25 +144,29 @@ class Statistic extends Component {
     const max = Math.max(...genreAmounts);
     const maxID = genreAmounts.indexOf(max);
 
-    return `${genreLabels[maxID] ? genreLabels[maxID] : `-`}`;
+    return `${genreLabels[maxID] ? genreLabels[maxID] : ``}`;
   }
 
   _getWatchedFilmsTemplate() {
-    return `${this._filteringFilms.length} <span class="statistic__item-description">movie${this._filteringFilms.length === 1 ? `` : `s`}</span>`;
+    return (
+      `${this._filteredFilms.length} 
+      <span class="statistic__item-description">
+        movie${this._filteredFilms.length === 1 ? `` : `s`}
+      </span>`
+    );
   }
 
   _onUpdateDate() {
     this._chart.destroy();
     this._generateCharts();
     this._element.querySelector(`.statistic__item-text--watched`).innerHTML = this._getWatchedFilmsTemplate();
-    this._element.querySelector(`.statistic__item-text--duration`).innerHTML = this._getFilmsDurationTemplate();
+    this._element.querySelector(`.statistic__item-text--duration`).innerHTML = this._getFilmsRuntimeTemplate();
     this._element.querySelector(`.statistic__item-text--genres`).innerHTML = this._getTopGenresTemplate();
   }
 
   get template() {
-    return `<div>
+    return (`<div>
       <p class="statistic__rank">Your rank <span class="statistic__rank-label">Sci-Fighter</span></p>
-    
       <form action="https://echo.htmlacademy.ru/" method="get" class="statistic__filters">
         <p class="statistic__filters-description">Show stats:</p>
     
@@ -182,7 +193,7 @@ class Statistic extends Component {
         </li>
         <li class="statistic__text-item">
           <h4 class="statistic__item-title">Total duration</h4>
-          <p class="statistic__item-text statistic__item-text--duration">${this._getFilmsDurationTemplate()}</p>
+          <p class="statistic__item-text statistic__item-text--duration">${this._getFilmsRuntimeTemplate()}</p>
         </li>
         <li class="statistic__text-item">
           <h4 class="statistic__item-title">Top genre</h4>
@@ -194,12 +205,12 @@ class Statistic extends Component {
         <canvas class="statistic__chart" width="1000"></canvas>
       </div>
     
-    </div>`;
+    </div>`);
   }
 
   addEventListeners() {
     this._element.querySelectorAll(`.statistic__filters-input`).forEach((element) => {
-      element.addEventListener(`click`, this._filterByTime);
+      element.addEventListener(`click`, this._filterByPeriod);
     });
   }
 
@@ -212,7 +223,7 @@ class Statistic extends Component {
 
   removeEventListeners() {
     this._element.querySelectorAll(`.statistic__filters-input`).forEach((element) => {
-      element.removeEventListener(`click`, this._filterByTime);
+      element.removeEventListener(`click`, this._filterByPeriod);
     });
   }
 }

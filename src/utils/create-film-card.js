@@ -107,7 +107,7 @@ export const createFilmCard = () => ({
   releaseDate: Date.now() + getRandomInteger(Time.YEAR, (-Time.YEAR) * 15) * getRandomInteger(Time.DAY),
   country: getRandomArrayElement(COUNTRIES),
   duration: getRandomInteger(Time.HOUR * 2.5, Time.HOUR),
-  genres: GENRES.sort(compareRandom),
+  genres: GENRES.sort(compareRandom).slice(0, generateRandomNumber(GENRES.length)),
   releaseCountry: getRandomArrayElement(COUNTRIES),
   comments: COMMENTS.slice(0, generateRandomNumber(COMMENTS.length)),
   ageLimit: getRandomArrayElement(AGE_LIMITS),
