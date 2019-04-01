@@ -138,8 +138,12 @@ const renderFilters = (container, filters) => {
 
     filter.onFilter = () => {
       const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+      const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
+
       filmCards.forEach((card) => card.remove());
       filterData.isActive = !filterData.isActive;
+      activeItem.classList.remove(`main-navigation__item--active`);
+      filter.element.classList.add(`main-navigation__item--active`);
       filter.update(filterData);
 
       if (filterItem.type === `watchlist`) {

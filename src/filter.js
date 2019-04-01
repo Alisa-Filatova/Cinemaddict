@@ -23,15 +23,6 @@ class Filter extends Component {
 
   _onChangeActive() {
     this._isActive = !this._isActive;
-    this.removeEventListeners();
-
-    if (this._isActive) {
-      this._element.classList.remove(`main-navigation__item--active`);
-    } else {
-      this._element.classList.add(`main-navigation__item--active`);
-    }
-
-    this.addEventListeners();
   }
 
   set onFilter(fn) {

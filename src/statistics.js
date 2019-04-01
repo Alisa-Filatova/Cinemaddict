@@ -6,7 +6,6 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 class Statistic extends Component {
 
-
   constructor(films) {
     super();
     this._films = films;
@@ -56,10 +55,6 @@ class Statistic extends Component {
     return [genres, genresCount];
   }
 
-  /**
-   * Method for generate chart
-   * @private
-   */
   _generateCharts() {
     const [genreLabels, genreAmounts] = this._filterByGenre();
     const statisticWrapper = this._element.querySelector(`.statistic__chart`);
@@ -81,11 +76,7 @@ class Statistic extends Component {
     this._chart.update();
   }
 
-  /**
-   * Method for generate chart properties
-   * @private
-   * @return {Object}
-   */
+
   _getChart() {
     return {
       plugins: [ChartDataLabels],
@@ -136,11 +127,6 @@ class Statistic extends Component {
     };
   }
 
-  /**
-   * Method for films duration template
-   * @return {String}
-   * @private
-   */
   _getFilmsDurationTemplate() {
     const totalDuration = this._filteringFilms.reduce((duration, film) => duration + film.duration, 0);
     return `${moment.duration(totalDuration).hours()} <span class="statistic__item-description">h</span> ${moment.duration(totalDuration).minutes()} <span class="statistic__item-description">m</span>`;
