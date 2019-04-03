@@ -137,12 +137,12 @@ class FilmPopup extends Component {
 
   static _onAddNewComment(comments) {
     return comments.map((item) => `<li class="film-details__comment">
-      <span class="film-details__comment-emoji">${item.emoji}</span>
+      <span class="film-details__comment-emoji">${EMOJIES[item.emotion]}</span>
       <div>
         <p class="film-details__comment-text">${item.comment}</p>
         <p class="film-details__comment-info">
-          <span class="film-details__comment-author">${item.userName}</span>
-          <span class="film-details__comment-day">${moment().format(`DD MMMM YYYY`)}</span>
+          <span class="film-details__comment-author">${item.author}</span>
+          <span class="film-details__comment-day">${moment(item.date).format(`DD MMMM YYYY`)}</span>
         </p>
       </div>
     </li>`).join(``);
@@ -151,7 +151,7 @@ class FilmPopup extends Component {
   static _createMapper(target) {
     return {
       "comment-emoji": (value) => {
-        target.comments.emoji = EMOJIES[value];
+        target.comments.emotion = EMOJIES[value];
       },
       "comment": (value) => (target.comments.comment = value),
       "score": (value) => (target.score = value),
@@ -161,9 +161,9 @@ class FilmPopup extends Component {
   _processForm(formData) {
     const entry = {
       comments: {
-        emoji: ``,
+        emotion: EMOJIES[`neutral-face`],
         comment: ``,
-        userName: `New user`,
+        author: `New user`,
         date: Date.now(),
       },
       score: 0,

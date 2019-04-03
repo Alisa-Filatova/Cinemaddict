@@ -2,8 +2,14 @@ import FilmCard from './film-card';
 import FilmPopup from './film-popup';
 import Filter from './filter';
 import Statistic from './statistics';
+import API from './api.js';
 import {createFilmCard} from './utils';
 import {MAIN_BLOCK_MAX_CARDS, HIDDEN_CLASS, EXTRA_BLOCK_MAX_CARDS} from './constants';
+
+const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
+const END_POINT = `https://es8-demo-srv.appspot.com/moowle`;
+
+const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 const filtersData = [
   {title: `All movies`, type: `all`, count: null, isActive: true},
@@ -22,8 +28,8 @@ const statisticButton = document.querySelector(`.main-navigation__item--addition
 
 // Генерация списка карточек фильмов из случайных данных
 
-const getFilmsData = (amount) =>
-  Array.from({length: amount}).map(() => createFilmCard());
+// const getFilmsData = (amount) =>
+//   Array.from({length: amount}).map(() => createFilmCard());
 
 // Сортировка дополнительных блоков
 
@@ -31,10 +37,10 @@ const compareRating = (a, b) => b.rating - a.rating;
 const compareCommentsCount = (a, b) => b.comments.length - a.comments.length;
 
 // Данные карточек фильмов
-
-const mainFilmsData = getFilmsData(MAIN_BLOCK_MAX_CARDS);
-const topFilmsData = mainFilmsData.sort(compareRating).slice(0, EXTRA_BLOCK_MAX_CARDS);
-const mostCommentedFilmsData = mainFilmsData.sort(compareCommentsCount).slice(0, EXTRA_BLOCK_MAX_CARDS);
+const mainFilmsData = api.getFilms();
+// const mainFilmsData = getFilmsData(MAIN_BLOCK_MAX_CARDS);
+// const topFilmsData = mainFilmsData.sort(compareRating).slice(0, EXTRA_BLOCK_MAX_CARDS);
+// const mostCommentedFilmsData = mainFilmsData.sort(compareCommentsCount).slice(0, EXTRA_BLOCK_MAX_CARDS);
 
 // Отрисовка списка фильмов
 
@@ -104,15 +110,31 @@ const renderFilmsList = (films, container, showControls) => {
   });
 };
 
-renderFilmsList(mainFilmsData, mainFilmsContainer);
-renderFilmsList(topFilmsData, topRatedFilmsContainer, false);
-renderFilmsList(mostCommentedFilmsData, mostCommentedFilmsContainer, false);
+mainFilmsData.then((films) =>
+  renderFilmsList(films
+    .slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer
+  )
+);
+
+mainFilmsData.then((films) =>
+  renderFilmsList(films
+    .sort(compareRating)
+    .slice(0, EXTRA_BLOCK_MAX_CARDS), topRatedFilmsContainer
+  )
+);
+
+mainFilmsData.then((films) =>
+  renderFilmsList(films
+    .sort(compareCommentsCount)
+    .slice(0, EXTRA_BLOCK_MAX_CARDS), mostCommentedFilmsContainer
+  )
+);
 
 // Отрисовка фильтров
 
 const countFilmsWithStatus = (films, status) => films.filter((film) => film[status]).length;
-const filterMainFilmsByType = (type) => renderFilmsList(mainFilmsData.filter((film) =>
-  film[type]), mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
+const filterMainFilmsByType = (type) =>
+  renderFilmsList(mainFilmsData.filter((film) => film[type]), mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
 
 const renderFilters = (container, filters) => {
   filters.reverse().forEach((filterItem) => {
