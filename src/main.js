@@ -3,7 +3,6 @@ import FilmPopup from './film-popup';
 import Filter from './filter';
 import Statistic from './statistics';
 import API from './api.js';
-import {createFilmCard} from './utils';
 import {MAIN_BLOCK_MAX_CARDS, HIDDEN_CLASS, EXTRA_BLOCK_MAX_CARDS} from './constants';
 
 const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
@@ -37,10 +36,9 @@ const compareRating = (a, b) => b.rating - a.rating;
 const compareCommentsCount = (a, b) => b.comments.length - a.comments.length;
 
 // Данные карточек фильмов
-const mainFilmsData = api.getFilms();
-// const mainFilmsData = getFilmsData(MAIN_BLOCK_MAX_CARDS);
-// const topFilmsData = mainFilmsData.sort(compareRating).slice(0, EXTRA_BLOCK_MAX_CARDS);
-// const mostCommentedFilmsData = mainFilmsData.sort(compareCommentsCount).slice(0, EXTRA_BLOCK_MAX_CARDS);
+const filmsData = api.getFilms();
+
+console.log(filmsData);
 
 // Отрисовка списка фильмов
 
@@ -110,43 +108,46 @@ const renderFilmsList = (films, container, showControls) => {
   });
 };
 
-mainFilmsData.then((films) =>
+filmsData.then((films) =>
   renderFilmsList(films
     .slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer
   )
 );
 
-mainFilmsData.then((films) =>
+filmsData.then((films) =>
   renderFilmsList(films
     .sort(compareRating)
-    .slice(0, EXTRA_BLOCK_MAX_CARDS), topRatedFilmsContainer
+    .slice(0, EXTRA_BLOCK_MAX_CARDS), topRatedFilmsContainer, false
   )
 );
 
-mainFilmsData.then((films) =>
+filmsData.then((films) =>
   renderFilmsList(films
     .sort(compareCommentsCount)
-    .slice(0, EXTRA_BLOCK_MAX_CARDS), mostCommentedFilmsContainer
+    .slice(0, EXTRA_BLOCK_MAX_CARDS), mostCommentedFilmsContainer, false
   )
 );
 
 // Отрисовка фильтров
-
-const countFilmsWithStatus = (films, status) => films.filter((film) => film[status]).length;
+//
+// const countFilmsWithStatus = (films, status) => films.filter((film) => film[status]).length;
 const filterMainFilmsByType = (type) =>
-  renderFilmsList(mainFilmsData.filter((film) => film[type]), mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
+  filmsData.then((films) => renderFilmsList(films
+    .filter((film) => film[type])
+    .slice(0, EXTRA_BLOCK_MAX_CARDS), mainFilmsContainer
+  ));
 
 const renderFilters = (container, filters) => {
   filters.reverse().forEach((filterItem) => {
     const filterData = Object.assign(filterItem);
 
-    if (filterData.type === `watchlist`) {
-      filterData.count = countFilmsWithStatus(mainFilmsData, `isInWatchlist`);
-    } else if (filterData.type === `history`) {
-      filterData.count = countFilmsWithStatus(mainFilmsData, `isWatched`);
-    } else if (filterData.type === `favorites`) {
-      filterData.count = countFilmsWithStatus(mainFilmsData, `isFavorite`);
-    }
+    // if (filterData.type === `watchlist`) {
+    //   filterData.count = countFilmsWithStatus(filmsData, `isInWatchList`);
+    // } else if (filterData.type === `history`) {
+    //   filterData.count = countFilmsWithStatus(filmsData, `isWatched`);
+    // } else if (filterData.type === `favorites`) {
+    //   filterData.count = countFilmsWithStatus(filmsData, `isFavorite`);
+    // }
 
     const filter = new Filter(filterData);
 
@@ -169,7 +170,9 @@ const renderFilters = (container, filters) => {
       } else if (filterItem.type === `favorites`) {
         filterMainFilmsByType(`isFavorite`);
       } else {
-        renderFilmsList(mainFilmsData, mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
+        filmsData.then((films) => renderFilmsList(films
+          .slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer, MAIN_BLOCK_MAX_CARDS)
+        );
       }
     };
   });
@@ -177,10 +180,11 @@ const renderFilters = (container, filters) => {
 
 renderFilters(mainNavigation, filtersData);
 
-// Отрисовка статистики
+// TODO Отрисовка статистики
 
 const showStatistic = () => {
-  const statisticComponent = new Statistic(mainFilmsData);
+  const statisticComponent = new Statistic(filmsData);
+
   statisticContainer.innerHTML = ``;
   filmsContainer.classList.add(HIDDEN_CLASS);
   statisticContainer.appendChild(statisticComponent.render());
