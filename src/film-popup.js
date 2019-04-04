@@ -142,7 +142,7 @@ class FilmPopup extends Component {
         <p class="film-details__comment-text">${item.comment}</p>
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${item.author}</span>
-          <span class="film-details__comment-day">${moment(item.date).format(`DD MMMM YYYY`)}</span>
+          <span class="film-details__comment-day">${moment(item.date).startOf(`hour`).fromNow()}</span>
         </p>
       </div>
     </li>`).join(``);
@@ -151,7 +151,7 @@ class FilmPopup extends Component {
   static _createMapper(target) {
     return {
       "comment-emoji": (value) => {
-        target.comments.emotion = EMOJIES[value];
+        target.comments.emotion = value;
       },
       "comment": (value) => (target.comments.comment = value),
       "score": (value) => (target.score = value),
@@ -195,7 +195,7 @@ class FilmPopup extends Component {
       {title: `Actors`, value: this._actors},
       {title: `Release Date`, value: `${moment(this._releaseDate).format(`DD MMMM YYYY`)}`},
       {title: `Release Country`, value: this._releaseCountry},
-      {title: `Runtime`, value: `${moment.duration(this._duration).asMinutes().toFixed()} min`},
+      {title: `Runtime`, value: `${this._duration} min`},
       {title: `Country`, value: this._country},
       {title: `Genres`, value: this._genres.join(`, `)},
     ];

@@ -11,16 +11,27 @@ class ModelFilmCard {
     this.releaseDate = data[`film_info`][`release`][`release_date`];
     this.country = data[`film_info`][`release`][`release_country`] || `-`;
     this.rating = data[`film_info`][`total_rating`] || 0.0;
-    this.score = [`user_details`][`personal_rating`] || 0;
+    this.score = data[`user_details`][`personal_rating`] || 0;
     this.genres = data[`film_info`][`genre`] || [];
     this.ageLimit = data[`film_info`][`age_rating`] || 0;
     this.releaseCountry = data[`film_info`][`release`][`release_country`] || `-`;
     this.comments = data[`comments`] || [];
-    this.duration = data[`film_info`][`runtime`] || ``;
+    this.duration = data[`film_info`][`runtime`];
 
     this.isInWatchlist = Boolean(data[`user_details`][`watchlist`]);
     this.isWatched = Boolean(data[`user_details`][`already_watched`]);
     this.isFavorite = Boolean(data[`user_details`][`favorite`]);
+  }
+
+  toRAW() {
+    return {
+      'id': this.id,
+      'personal_rating': this.score,
+      'comments': [...this.comments],
+      'watchlist': this.isInWatchlist,
+      'already_watched': this.isWatched,
+      'favorite': this.isFavorite,
+    }
   }
 
   static parseFilmCard(data) {

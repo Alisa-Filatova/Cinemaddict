@@ -38,7 +38,9 @@ const compareCommentsCount = (a, b) => b.comments.length - a.comments.length;
 // Данные карточек фильмов
 const filmsData = api.getFilms();
 
-console.log(filmsData);
+let data = [];
+filmsData.then((films) => films.map((item) => data.push(item)));
+console.log(data);
 
 // Отрисовка списка фильмов
 
