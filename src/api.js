@@ -1,11 +1,5 @@
 import ModelFilmCard from './model-film-card';
-
-const Method = {
-  GET: `GET`,
-  POST: `POST`,
-  PUT: `PUT`,
-  DELETE: `DELETE`
-};
+import {Method} from './enums';
 
 const checkStatus = (response) => {
   if (response.status >= 200 && response.status < 300) {
@@ -31,17 +25,6 @@ const API = class {
       .then(ModelFilmCard.parseFilmCards);
   }
 
-  createFilm({film}) {
-    return this._load({
-      url: `movies`,
-      method: Method.POST,
-      body: JSON.stringify(film),
-      headers: new Headers({'Content-Type': `application/json`})
-    })
-      .then(toJSON)
-      .then(ModelFilmCard.parseFilmCard);
-  }
-
   updateFilm({id, data}) {
     return this._load({
       url: `movies/${id}`,
@@ -51,10 +34,6 @@ const API = class {
     })
       .then(toJSON)
       .then(ModelFilmCard.parseFilmCard);
-  }
-
-  deleteFilm({id}) {
-    return this._load({url: `movies/${id}`, method: Method.DELETE});
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {

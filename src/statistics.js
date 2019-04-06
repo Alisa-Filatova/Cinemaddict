@@ -23,24 +23,22 @@ class Statistic extends Component {
         this._filteredFilms = this._watchedFilms;
         break;
       case `today`:
-        this._filteredFilms = this._watchedFilms
-          .filter((film) => moment(film.userRating)
-          .format(`D MMMM YYYY`) === moment()
-          .format(`D MMMM YYYY`));
+        this._filteredFilms = this._watchedFilms.filter((film) =>
+          moment(film.watchDate).format(`D MMMM YYYY`) === moment().format(`D MMMM YYYY`));
         break;
       case `week`:
         this._filteredFilms = this._watchedFilms
-          .filter((film) => moment(film.userRating) > moment()
+          .filter((film) => moment(film.watchDate) > moment()
           .subtract(1, `w`));
         break;
       case `month`:
         this._filteredFilms = this._watchedFilms
-          .filter((film) => moment(film.userRating) > moment()
+          .filter((film) => moment(film.watchDate) > moment()
           .subtract(1, `months`));
         break;
       case `year`:
         this._filteredFilms = this._watchedFilms
-          .filter((film) => moment(film.userRating) > moment()
+          .filter((film) => moment(film.watchDate) > moment()
           .subtract(1, `y`));
         break;
     }
@@ -83,7 +81,6 @@ class Statistic extends Component {
 
     this._chart.update();
   }
-
 
   _getChart() {
     return {

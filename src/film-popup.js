@@ -7,6 +7,7 @@ class FilmPopup extends Component {
 
   constructor(data) {
     super();
+    this._id = data.id;
     this._title = data.title;
     this._titleOriginal = data.titleOriginal;
     this._description = data.description;
@@ -142,7 +143,7 @@ class FilmPopup extends Component {
         <p class="film-details__comment-text">${item.comment}</p>
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${item.author}</span>
-          <span class="film-details__comment-day">${moment(item.date).startOf(`hour`).fromNow()}</span>
+          <span class="film-details__comment-day">${moment(item.date).fromNow()}</span>
         </p>
       </div>
     </li>`).join(``);
@@ -187,6 +188,47 @@ class FilmPopup extends Component {
     this._element.querySelector(`.film-details__comment-input`).value = ``;
   }
 
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    this._element.querySelector(`.film-details__inner`).classList.add(`shake`);
+
+    setTimeout(() => {
+      this._element.querySelector(`.film-details__inner`).classList.remove(`shake`);
+    }, ANIMATION_TIMEOUT);
+  }
+
+  disableComments() {
+    this._element.querySelectorAll(`.film-details__add-emoji`).disabled = true;
+    this._element.querySelectorAll(`.film-details__comment-input`).disabled = true;
+  }
+
+  disableRating() {
+    this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
+      item.disabled = true;
+    });
+  }
+
+  unblockComments() {
+    this._element.querySelectorAll(`.film-details__add-emoji`).disabled = false;
+    this._element.querySelectorAll(`.film-details__comment-input`).disabled = false;
+  }
+
+  unblockRating() {
+    this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
+      item.disabled = true;
+    });
+  }
+
+  showCommentsError() {
+    this._element.querySelector(`.film-details__comment-input`).style.border = `solid 3px #ff0000`;
+    this.unblockComments();
+  }
+
+  showRatingError() {
+    this._element.querySelector(`.film-details__user-rating-input:checked + label`).style.backgroundColor = `#ff0000`;
+    this.unblockRating();
+  }
+
   get template() {
 
     const filmDetails = [
@@ -195,7 +237,7 @@ class FilmPopup extends Component {
       {title: `Actors`, value: this._actors},
       {title: `Release Date`, value: `${moment(this._releaseDate).format(`DD MMMM YYYY`)}`},
       {title: `Release Country`, value: this._releaseCountry},
-      {title: `Runtime`, value: `${this._duration} min`},
+      {title: `Runtime`, value: `${moment.duration(this._duration).asMinutes()} min`},
       {title: `Country`, value: this._country},
       {title: `Genres`, value: this._genres.join(`, `)},
     ];
