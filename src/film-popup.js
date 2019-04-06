@@ -7,6 +7,7 @@ class FilmPopup extends Component {
 
   constructor(data) {
     super();
+    this._id = data.id;
     this._title = data.title;
     this._titleOriginal = data.titleOriginal;
     this._description = data.description;
@@ -137,12 +138,12 @@ class FilmPopup extends Component {
 
   static _onAddNewComment(comments) {
     return comments.map((item) => `<li class="film-details__comment">
-      <span class="film-details__comment-emoji">${item.emoji}</span>
+      <span class="film-details__comment-emoji">${EMOJIES[item.emotion]}</span>
       <div>
         <p class="film-details__comment-text">${item.comment}</p>
         <p class="film-details__comment-info">
-          <span class="film-details__comment-author">${item.userName}</span>
-          <span class="film-details__comment-day">${moment().format(`DD MMMM YYYY`)}</span>
+          <span class="film-details__comment-author">${item.author}</span>
+          <span class="film-details__comment-day">${moment(item.date).fromNow()}</span>
         </p>
       </div>
     </li>`).join(``);
@@ -151,7 +152,7 @@ class FilmPopup extends Component {
   static _createMapper(target) {
     return {
       "comment-emoji": (value) => {
-        target.comments.emoji = EMOJIES[value];
+        target.comments.emotion = value;
       },
       "comment": (value) => (target.comments.comment = value),
       "score": (value) => (target.score = value),
@@ -161,9 +162,9 @@ class FilmPopup extends Component {
   _processForm(formData) {
     const entry = {
       comments: {
-        emoji: ``,
+        emotion: EMOJIES[`neutral-face`],
         comment: ``,
-        userName: `New user`,
+        author: `New user`,
         date: Date.now(),
       },
       score: 0,
@@ -187,6 +188,47 @@ class FilmPopup extends Component {
     this._element.querySelector(`.film-details__comment-input`).value = ``;
   }
 
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    this._element.querySelector(`.film-details__inner`).classList.add(`shake`);
+
+    setTimeout(() => {
+      this._element.querySelector(`.film-details__inner`).classList.remove(`shake`);
+    }, ANIMATION_TIMEOUT);
+  }
+
+  disableComments() {
+    this._element.querySelectorAll(`.film-details__add-emoji`).disabled = true;
+    this._element.querySelectorAll(`.film-details__comment-input`).disabled = true;
+  }
+
+  disableRating() {
+    this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
+      item.disabled = true;
+    });
+  }
+
+  unblockComments() {
+    this._element.querySelectorAll(`.film-details__add-emoji`).disabled = false;
+    this._element.querySelectorAll(`.film-details__comment-input`).disabled = false;
+  }
+
+  unblockRating() {
+    this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
+      item.disabled = true;
+    });
+  }
+
+  showCommentsError() {
+    this._element.querySelector(`.film-details__comment-input`).style.border = `solid 3px #ff0000`;
+    this.unblockComments();
+  }
+
+  showRatingError() {
+    this._element.querySelector(`.film-details__user-rating-input:checked + label`).style.backgroundColor = `#ff0000`;
+    this.unblockRating();
+  }
+
   get template() {
 
     const filmDetails = [
@@ -195,7 +237,7 @@ class FilmPopup extends Component {
       {title: `Actors`, value: this._actors},
       {title: `Release Date`, value: `${moment(this._releaseDate).format(`DD MMMM YYYY`)}`},
       {title: `Release Country`, value: this._releaseCountry},
-      {title: `Runtime`, value: `${moment.duration(this._duration).asMinutes().toFixed()} min`},
+      {title: `Runtime`, value: `${moment.duration(this._duration).asMinutes()} min`},
       {title: `Country`, value: this._country},
       {title: `Genres`, value: this._genres.join(`, `)},
     ];

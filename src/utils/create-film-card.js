@@ -49,27 +49,27 @@ const COUNTRIES = [`USA`, `Canada`, `Russia`, `France`, `England`];
 
 const COMMENTS = [
   {
-    emoji: EMOJIES.sleeping,
+    emotion: EMOJIES.sleeping,
     comment: `So boring...`,
-    userName: getRandomArrayElement(ACTORS),
+    author: getRandomArrayElement(ACTORS),
     date: moment(),
   },
   {
-    emoji: EMOJIES.grinning,
+    emotion: EMOJIES.grinning,
     comment: `Like it...`,
-    userName: getRandomArrayElement(ACTORS),
+    author: getRandomArrayElement(ACTORS),
     date: moment(),
   },
   {
-    emoji: EMOJIES.grinning,
+    emotion: EMOJIES.grinning,
     comment: `So so...`,
-    userName: getRandomArrayElement(ACTORS),
+    author: getRandomArrayElement(ACTORS),
     date: moment(),
   },
   {
-    emoji: EMOJIES.sleeping,
+    emotion: EMOJIES.sleeping,
     comment: `I'm slept`,
-    userName: getRandomArrayElement(ACTORS),
+    author: getRandomArrayElement(ACTORS),
     date: moment(),
   }
 ];
