@@ -2,7 +2,7 @@ import moment from 'moment';
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import Component from './component';
-import {createElement, isNumeric} from './utils';
+import {createElement, isNumeric} from '../utils/index';
 
 class Statistic extends Component {
   constructor(films) {

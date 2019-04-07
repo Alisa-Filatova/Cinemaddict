@@ -1,7 +1,7 @@
 import moment from 'moment';
 import Component from './component';
-import {EMOJIES, MAX_RATE_NUMBER} from './constants';
-import {Keycode} from './enums';
+import {EMOJIES, MAX_RATE_NUMBER} from '../constants/index';
+import {Keycode} from '../enums/index';
 
 class FilmPopup extends Component {
 
@@ -21,7 +21,6 @@ class FilmPopup extends Component {
     this._score = data.score;
     this._genres = data.genres;
     this._ageLimit = data.ageLimit;
-    this._releaseCountry = data.releaseCountry;
     this._comments = data.comments;
     this._duration = data.duration;
 
@@ -235,8 +234,7 @@ class FilmPopup extends Component {
       {title: `Director`, value: this._director},
       {title: `Writers`, value: this._writers},
       {title: `Actors`, value: this._actors},
-      {title: `Release Date`, value: `${moment(this._releaseDate).format(`DD MMMM YYYY`)}`},
-      {title: `Release Country`, value: this._releaseCountry},
+      {title: `Release Date`, value: `${moment(this._releaseDate).format(`DD MMMM YYYY`)} (${this._country})`},
       {title: `Runtime`, value: `${moment.duration(this._duration).asMinutes()} min`},
       {title: `Country`, value: this._country},
       {title: `Genres`, value: this._genres.join(`, `)},

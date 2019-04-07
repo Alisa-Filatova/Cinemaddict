@@ -1,4 +1,4 @@
-import {Time} from './enums';
+import {Time} from '../enums/index';
 
 class ModelFilmCard {
   constructor(data) {
@@ -16,7 +16,6 @@ class ModelFilmCard {
     this.score = data[`user_details`][`personal_rating`] || 0;
     this.genres = data[`film_info`][`genre`] || [];
     this.ageLimit = data[`film_info`][`age_rating`] || 0;
-    this.releaseCountry = data[`film_info`][`release`][`release_country`] || `-`;
     this.comments = data[`comments`] || [];
     this.duration = data[`film_info`][`runtime`] * Time.MINUTE || 0;
     this.watchDate = data[`user_details`][`watching_date`];

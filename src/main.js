@@ -1,21 +1,17 @@
-import FilmCard from './film-card';
-import FilmPopup from './film-popup';
-import Filter from './filter';
-import Statistic from './statistics';
+import FilmCard from './components/film-card';
+import FilmPopup from './components/film-popup';
+import Filter from './components/filter';
+import Statistic from './components/statistics';
+import {Keycode} from './enums';
 import API from './api.js';
-import {MAIN_BLOCK_MAX_CARDS, HIDDEN_CLASS, EXTRA_BLOCK_MAX_CARDS} from './constants';
-
-const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
-const END_POINT = `https://es8-demo-srv.appspot.com/moowle`;
-
-const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
-
-const filtersData = [
-  {title: `All movies`, type: `all`, count: null, isActive: true},
-  {title: `Watchlist`, type: `watchlist`, count: null, isActive: false},
-  {title: `History`, type: `history`, count: null, isActive: false},
-  {title: `Favorites`, type: `favorites`, count: null, isActive: false},
-];
+import {
+  AUTHORIZATION,
+  END_POINT,
+  MAIN_BLOCK_MAX_CARDS,
+  EXTRA_BLOCK_MAX_CARDS,
+  HIDDEN_CLASS,
+  FILTERS_DATA,
+} from './constants';
 
 const mainNavigation = document.querySelector(`.main-navigation`);
 const filmsContainer = document.querySelector(`.films`);
@@ -25,6 +21,10 @@ const mostCommentedFilmsContainer = filmsContainer.querySelector(`.films-list--m
 const statisticContainer = document.querySelector(`.statistic`);
 const statisticButton = document.querySelector(`.main-navigation__item--additional`);
 const placeholderContainer = document.querySelector(`.films-list__title`);
+const footerStatisticContainer = document.querySelector(`.footer__statistics`);
+const showMoreButton = document.querySelector(`.films-list__show-more`);
+
+const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 // Сортировка дополнительных блоков
 
@@ -145,14 +145,37 @@ const renderFilmsList = (films, container, showControls) => {
       filmCard.update(data);
       filmPopup.destroy();
     };
+
+    document.addEventListener(`keydown`, (event) => {
+      event.preventDefault();
+      if (event.keyCode === Keycode.ESC) {
+        filmCard.update(data);
+        filmPopup.destroy();
+      }
+    });
   });
 };
 
-// Отрисовка фильтров
+// Подсчет кол-ва фильмов по статусу
 
 const countFilmsWithStatus = (films, status) => films.filter((film) => film[status]).length;
-const filterMainFilmsByType = (films, type) =>
-  renderFilmsList(films.filter((film) => film[type]).slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer);
+
+// Сортировка и отрисовка фильмов по типу
+
+const filterMainFilmsByType = (films, type, endAmount, startAmount = 0) =>
+  renderFilmsList(films.filter((film) => film[type]).slice(startAmount, endAmount), mainFilmsContainer);
+
+// Отображение кнопки ShowMore
+
+const toggleShowMoreButton = (filmsData, currentTypeFilms, state) => {
+  if (countFilmsWithStatus(filmsData, state) === currentTypeFilms.length || currentTypeFilms.length === 0) {
+    showMoreButton.classList.add(HIDDEN_CLASS);
+  } else if (countFilmsWithStatus(filmsData, state) > currentTypeFilms.length) {
+    showMoreButton.classList.remove(HIDDEN_CLASS);
+  }
+};
+
+// Отрисовка фильтров
 
 const renderFilters = (container, filters, films) => {
   filters.reverse().forEach((filterItem) => {
@@ -170,9 +193,17 @@ const renderFilters = (container, filters, films) => {
 
     container.insertAdjacentElement(`afterbegin`, filter.render());
 
+    // Сортировка фильмов по фильтру
+
     filter.onFilter = () => {
       const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
       const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
+
+      if (filmsContainer.classList.contains(HIDDEN_CLASS)) {
+        filmsContainer.classList.remove(HIDDEN_CLASS);
+        statisticButton.classList.remove(`main-navigation__item--active`);
+        statisticContainer.innerHTML = ``;
+      }
 
       filmCards.forEach((card) => card.remove());
       filterData.isActive = !filterData.isActive;
@@ -181,13 +212,26 @@ const renderFilters = (container, filters, films) => {
       filter.update(filterData);
 
       if (filterItem.type === `watchlist`) {
-        filterMainFilmsByType(films, `isInWatchlist`);
+        filterMainFilmsByType(films, `isInWatchlist`, MAIN_BLOCK_MAX_CARDS);
+        const watchlistFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+        toggleShowMoreButton(films, watchlistFilmCards, `isInWatchlist`);
       } else if (filterItem.type === `history`) {
-        filterMainFilmsByType(films, `isWatched`);
+        filterMainFilmsByType(films, `isWatched`, MAIN_BLOCK_MAX_CARDS);
+        const historyFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+        toggleShowMoreButton(films, historyFilmCards, `isWatched`);
       } else if (filterItem.type === `favorites`) {
-        filterMainFilmsByType(films, `isFavorite`);
+        filterMainFilmsByType(films, `isFavorite`, MAIN_BLOCK_MAX_CARDS);
+        const favoriteFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+        toggleShowMoreButton(films, favoriteFilmCards, `isFavorite`);
       } else {
         renderFilmsList(films.slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
+        const allFilmsCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+
+        if (allFilmsCards.length === films.length) {
+          showMoreButton.classList.add(HIDDEN_CLASS);
+        } else {
+          showMoreButton.classList.remove(HIDDEN_CLASS);
+        }
       }
     };
   });
@@ -219,7 +263,7 @@ api.getFilms()
     renderFilmsList(films
       .sort(compareCommentsCount)
       .slice(0, EXTRA_BLOCK_MAX_CARDS), mostCommentedFilmsContainer, false);
-    renderFilters(mainNavigation, filtersData, films);
+    renderFilters(mainNavigation, FILTERS_DATA, films);
 
     // Отрисовка статистики
 
@@ -236,6 +280,46 @@ api.getFilms()
         statisticContainer.innerHTML = ``;
         filmsContainer.classList.add(HIDDEN_CLASS);
         statisticContainer.appendChild(statisticComponent.render());
+      }
+    });
+
+    footerStatisticContainer.innerHTML = `<p>${films.length} movies inside</p>`;
+
+    // Показать больше карточек по клику на showMoreButton
+
+    showMoreButton.addEventListener(`click`, () => {
+      const visibleFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+      const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
+
+      if (activeItem.id === `watchlist`) {
+        filterMainFilmsByType(films, `isInWatchlist`, visibleFilmCards.length + MAIN_BLOCK_MAX_CARDS, visibleFilmCards.length);
+        const allInWatchlistFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+
+        if (allInWatchlistFilmCards.length === countFilmsWithStatus(films, `isInWatchlist`)) {
+          showMoreButton.classList.add(HIDDEN_CLASS);
+        }
+      } else if (activeItem.id === `history`) {
+        filterMainFilmsByType(films, `isWatched`, visibleFilmCards.length + MAIN_BLOCK_MAX_CARDS, visibleFilmCards.length);
+        const allIsWatchedFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+
+        if (allIsWatchedFilmCards.length === countFilmsWithStatus(films, `isWatched`)) {
+          showMoreButton.classList.add(HIDDEN_CLASS);
+        }
+      } else if (activeItem.id === `favorites`) {
+        filterMainFilmsByType(films, `isFavorite`, visibleFilmCards.length + MAIN_BLOCK_MAX_CARDS, visibleFilmCards.length);
+        const allIsFavoriteFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+
+        if (allIsFavoriteFilmCards.length === countFilmsWithStatus(films, `isFavorite`)) {
+          showMoreButton.classList.add(HIDDEN_CLASS);
+        }
+      } else if (activeItem.id === `all`) {
+        renderFilmsList(films
+          .slice(visibleFilmCards.length, visibleFilmCards.length + MAIN_BLOCK_MAX_CARDS), mainFilmsContainer);
+        const allFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+
+        if (allFilmCards.length === films.length) {
+          showMoreButton.classList.add(HIDDEN_CLASS);
+        }
       }
     });
   })

@@ -4,14 +4,12 @@ import {
   generateRandomNumber,
   getRandomArrayElement,
   getRandomInteger
-} from './index';
-import {Time} from '../enums';
-import {
-  EMOJIES,
-  MAX_SENTENCES_FOR_FILM_DESCRIPTION,
-  BOOLEANS,
-  MAX_RATE_NUMBER,
-} from '../constants';
+} from '../utils/index';
+import {Time} from '../enums/index';
+import {EMOJIES, MAX_RATE_NUMBER} from '../constants/index';
+
+const BOOLEANS = [false, true];
+const MAX_SENTENCES_FOR_FILM_DESCRIPTION = 2;
 
 const TITLES = [
   `Mr Nobody`,
