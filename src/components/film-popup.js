@@ -1,4 +1,5 @@
 import moment from 'moment';
+import 'moment-duration-format';
 import Component from './component';
 import {EMOJIES, MAX_RATE_NUMBER} from '../constants/index';
 import {Keycode} from '../enums/index';
@@ -235,7 +236,7 @@ class FilmPopup extends Component {
       {title: `Writers`, value: this._writers},
       {title: `Actors`, value: this._actors},
       {title: `Release Date`, value: `${moment(this._releaseDate).format(`DD MMMM YYYY`)} (${this._country})`},
-      {title: `Runtime`, value: `${moment.duration(this._duration).asMinutes()} min`},
+      {title: `Runtime`, value: `${moment.duration(this._duration, `minutes`).format(`m [min]`)}`},
       {title: `Country`, value: this._country},
       {title: `Genres`, value: this._genres.join(`, `)},
     ];

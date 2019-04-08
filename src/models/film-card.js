@@ -1,5 +1,3 @@
-import {Time} from '../enums/index';
-
 class ModelFilmCard {
   constructor(data) {
     this.id = data[`id`];
@@ -17,7 +15,7 @@ class ModelFilmCard {
     this.genres = data[`film_info`][`genre`] || [];
     this.ageLimit = data[`film_info`][`age_rating`] || 0;
     this.comments = data[`comments`] || [];
-    this.duration = data[`film_info`][`runtime`] * Time.MINUTE || 0;
+    this.duration = data[`film_info`][`runtime`] || 0;
     this.watchDate = data[`user_details`][`watching_date`];
     this.isInWatchlist = Boolean(data[`user_details`][`watchlist`]);
     this.isWatched = Boolean(data[`user_details`][`already_watched`]);

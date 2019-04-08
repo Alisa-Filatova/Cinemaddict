@@ -241,8 +241,8 @@ const renderFilters = (container, filters, films) => {
 };
 
 const renderSearch = () => {
-  const search = new Search();
-  headerLogo.insertAdjacentElement(`afterend`, search.render());
+  const searchComponent = new Search();
+  headerLogo.insertAdjacentElement(`afterend`, searchComponent.render());
 };
 
 // Рассчет звания пользователя

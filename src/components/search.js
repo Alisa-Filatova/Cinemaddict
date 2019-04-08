@@ -1,8 +1,8 @@
 import Component from './component';
 
 class Search extends Component {
-  constructor() {
-    super();
+  constructor(data) {
+    super(data);
     this._onSearch = null;
     this._onChange = this._onChange.bind(this);
   }
@@ -11,7 +11,7 @@ class Search extends Component {
     event.preventDefault();
 
     if (typeof this._onSearch === `function`) {
-      this._onSearch();
+      this._onSearch(event.target.value);
     }
   }
 
@@ -29,11 +29,15 @@ class Search extends Component {
   }
 
   addEventListeners() {
-    this._element.addEventListener(`change`, this._onChange);
+    if (this._element) {
+      this._element.querySelector(`input`).addEventListener(`input`, this._onChange);
+    }
   }
 
   removeEventListeners() {
-    this._element.removeEventListener(`change`, this._onChange);
+    if (this._element) {
+      this._element.querySelector(`input`).removeEventListener(`input`, this._onChange);
+    }
   }
 }
 
