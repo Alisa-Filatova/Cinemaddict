@@ -2,6 +2,7 @@ import FilmCard from './components/film-card';
 import FilmPopup from './components/film-popup';
 import Filter from './components/filter';
 import Statistic from './components/statistics';
+import Search from './components/search';
 import {Keycode} from './enums';
 import API from './api.js';
 import {
@@ -23,6 +24,8 @@ const statisticButton = document.querySelector(`.main-navigation__item--addition
 const placeholderContainer = document.querySelector(`.films-list__title`);
 const footerStatisticContainer = document.querySelector(`.footer__statistics`);
 const showMoreButton = document.querySelector(`.films-list__show-more`);
+const profileRatingContainer = document.querySelector(`.profile__rating`);
+const headerLogo = document.querySelector(`.header__logo`);
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
@@ -237,6 +240,27 @@ const renderFilters = (container, filters, films) => {
   });
 };
 
+const renderSearch = () => {
+  const search = new Search();
+  headerLogo.insertAdjacentElement(`afterend`, search.render());
+};
+
+// Рассчет звания пользователя
+
+const getProfileRating = (films) => {
+  const count = countFilmsWithStatus(films, `isWatched`);
+
+  if (count <= 10 && count !== 0) {
+    return `Novice`;
+  } else if (count >= 11 && count < 20) {
+    return `Fan`;
+  } else if (count >= 20) {
+    return `Movie buff`;
+  } else {
+    return null;
+  }
+};
+
 // Плейсхолдер для загрузки
 
 const showPlaceholder = (message) => {
@@ -284,8 +308,9 @@ api.getFilms()
     });
 
     footerStatisticContainer.innerHTML = `<p>${films.length} movies inside</p>`;
+    profileRatingContainer.textContent = getProfileRating(films);
 
-    // Показать больше карточек по клику на showMoreButton
+    // Показать больше карточек showMoreButton
 
     showMoreButton.addEventListener(`click`, () => {
       const visibleFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
@@ -322,6 +347,8 @@ api.getFilms()
         }
       }
     });
+
+    renderSearch();
   })
   .catch(() => {
     showPlaceholder(`Something went wrong while loading movies. Check your connection or try again later 😓`);
