@@ -249,8 +249,8 @@ class FilmPopup extends Component {
 
     const filmDetails = [
       {title: `Director`, value: this._director},
-      {title: `Writers`, value: this._writers},
-      {title: `Actors`, value: this._actors},
+      {title: `Writers`, value: this._writers.join(`, `)},
+      {title: `Actors`, value: this._actors.join(`, `)},
       {title: `Release Date`, value: `${moment(this._releaseDate).format(`DD MMMM YYYY`)} (${this._country})`},
       {title: `Runtime`, value: `${moment.duration(this._duration, `minutes`).format(`m [min]`)}`},
       {title: `Country`, value: this._country},
@@ -336,7 +336,7 @@ class FilmPopup extends Component {
       
           <section class="film-details__user-rating-wrap">
             <div class="film-details__user-rating-controls visually-hidden">
-              <span class="film-details__watched-status ${this._isWatched && `film-details__watched-status--active`}">Already watched</span>
+              <span class="film-details__watched-status ${this._isWatched && `film-details__watched-status--active`}">${this._isWatched ? `Already watched` : `Will watch`}</span>
               <button class="film-details__watched-reset" type="button">undo</button>
             </div>
       

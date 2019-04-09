@@ -8,7 +8,9 @@ class Search extends Component {
   }
 
   _onSearchChange(event) {
-    return typeof this._onChange === `function` && this._onChange(event.target.value);
+    if (typeof this._onChange === `function`) {
+      this._onChange(event.target.value);
+    }
   }
 
   set onChange(fn) {
@@ -16,12 +18,10 @@ class Search extends Component {
   }
 
   get template() {
-    return `
-    <form class="header__search search">
-    <input type="text" name="search" class="search__field" placeholder="Search">
-    <button type="submit" class="visually-hidden">Search</button>
-  </form>
-    `.trim();
+    return `<form class="header__search search">
+      <input type="text" name="search" class="search__field" placeholder="Search">
+      <button type="submit" class="visually-hidden">Search</button>
+    </form>`;
   }
 
   addEventListeners() {
