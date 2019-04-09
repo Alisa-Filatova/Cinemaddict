@@ -8,7 +8,7 @@ export const HIDDEN_CLASS = `visually-hidden`;
 
 export const FILTERS_DATA = [
   {title: `All movies`, type: `all`, count: null, isActive: true},
-  {title: `Watchlist`, type: `watchlist`, count: null, isActive: false},
+  {title: `Watchlist`, type: `in_watchlist`, count: null, isActive: false},
   {title: `History`, type: `history`, count: null, isActive: false},
   {title: `Favorites`, type: `favorites`, count: null, isActive: false},
 ];

@@ -43,18 +43,24 @@ const renderFilmsList = (films, container, showControls) => {
 
     container.appendChild(filmCard.render());
 
+    // Открытие попапа с деталями фильма
+
     filmCard.onCommentsClick = () => {
       document.body.appendChild(filmPopup.render());
     };
 
+    // Добавление фильма в watchlist через карточку
+
     filmCard.onAddToWatchList = () => {
-      filmCard._isInWatchlist = !filmCard.isInWatchlist;
+      filmCard._isInWatchlist = !filmCard._isInWatchlist;
       data.isInWatchlist = filmCard._isInWatchlist;
       filmPopup._isInWatchlist = data.isInWatchlist;
 
       api.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => filmCard.update(newData));
     };
+
+    // Добавление фильма в watched через карточку
 
     filmCard.onMarkAsWatched = () => {
       filmCard._isWatched = !filmCard._isWatched;
@@ -65,6 +71,8 @@ const renderFilmsList = (films, container, showControls) => {
         .then((newData) => filmCard.update(newData));
     };
 
+    // Добавление фильма в favorite через карточку
+
     filmCard.onAddToFavorite = () => {
       filmCard._isFavorite = !filmCard._isFavorite;
       data.isFavorite = filmCard._isFavorite;
@@ -74,7 +82,9 @@ const renderFilmsList = (films, container, showControls) => {
         .then((newData) => filmCard.update(newData));
     };
 
-    filmPopup.onSetComment = (newData) => {
+    // Добавление комментария через popup
+
+    filmPopup.onAddComment = (newData) => {
       data.comments.push(newData.comments);
       filmPopup._comments = data.comments;
       filmCard._comments = data.comments;
@@ -92,6 +102,8 @@ const renderFilmsList = (films, container, showControls) => {
         });
     };
 
+    // Установка оценки фильма пользователем через popup
+
     filmPopup.onSetRating = (newData) => {
       data.score = newData.score;
       filmPopup.disableRating();
@@ -108,6 +120,8 @@ const renderFilmsList = (films, container, showControls) => {
         });
     };
 
+    // Добавление фильма в watchlist через popup
+
     filmPopup.onAddToWatchList = () => {
       filmPopup._isInWatchlist = !filmPopup._isInWatchlist;
       data.isInWatchlist = filmPopup._isInWatchlist;
@@ -119,6 +133,8 @@ const renderFilmsList = (films, container, showControls) => {
           filmCard.update(newData);
         });
     };
+
+    // Добавление фильма в watched через popup
 
     filmPopup.onMarkAsWatched = () => {
       filmPopup._isWatched = !filmPopup._isWatched;
@@ -132,6 +148,8 @@ const renderFilmsList = (films, container, showControls) => {
         });
     };
 
+    // Добавление фильма в favorite через popup
+
     filmPopup.onAddToFavorite = () => {
       filmPopup._isFavorite = !filmPopup._isFavorite;
       data.isFavorite = filmPopup._isFavorite;
@@ -144,13 +162,14 @@ const renderFilmsList = (films, container, showControls) => {
         });
     };
 
+    // Закрытие popup
+
     filmPopup.onClose = () => {
       filmCard.update(data);
       filmPopup.destroy();
     };
 
     document.addEventListener(`keydown`, (event) => {
-      event.preventDefault();
       if (event.keyCode === Keycode.ESC) {
         filmCard.update(data);
         filmPopup.destroy();
@@ -166,7 +185,10 @@ const countFilmsWithStatus = (films, status) => films.filter((film) => film[stat
 // Сортировка и отрисовка фильмов по типу
 
 const filterMainFilmsByType = (films, type, endAmount, startAmount = 0) =>
-  renderFilmsList(films.filter((film) => film[type]).slice(startAmount, endAmount), mainFilmsContainer);
+  renderFilmsList(films
+    .filter((film) => film[type])
+    .slice(startAmount, endAmount), mainFilmsContainer
+  );
 
 // Отображение кнопки ShowMore
 
@@ -184,7 +206,7 @@ const renderFilters = (container, filters, films) => {
   filters.reverse().forEach((filterItem) => {
     const filterData = Object.assign(filterItem);
 
-    if (filterData.type === `watchlist`) {
+    if (filterData.type === `in_watchlist`) {
       filterData.count = countFilmsWithStatus(films, `isInWatchlist`);
     } else if (filterData.type === `history`) {
       filterData.count = countFilmsWithStatus(films, `isWatched`);
@@ -192,13 +214,13 @@ const renderFilters = (container, filters, films) => {
       filterData.count = countFilmsWithStatus(films, `isFavorite`);
     }
 
-    const filter = new Filter(filterData);
+    const filterComponent = new Filter(filterData);
 
-    container.insertAdjacentElement(`afterbegin`, filter.render());
+    container.insertAdjacentElement(`afterbegin`, filterComponent.render());
 
     // Сортировка фильмов по фильтру
 
-    filter.onFilter = () => {
+    filterComponent.onFilter = () => {
       const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
       const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
 
@@ -211,10 +233,10 @@ const renderFilters = (container, filters, films) => {
       filmCards.forEach((card) => card.remove());
       filterData.isActive = !filterData.isActive;
       activeItem.classList.remove(`main-navigation__item--active`);
-      filter.element.classList.add(`main-navigation__item--active`);
-      filter.update(filterData);
+      filterComponent.element.classList.add(`main-navigation__item--active`);
+      filterComponent.update(filterData);
 
-      if (filterItem.type === `watchlist`) {
+      if (filterItem.type === `in_watchlist`) {
         filterMainFilmsByType(films, `isInWatchlist`, MAIN_BLOCK_MAX_CARDS);
         const watchlistFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
         toggleShowMoreButton(films, watchlistFilmCards, `isInWatchlist`);
@@ -227,7 +249,7 @@ const renderFilters = (container, filters, films) => {
         const favoriteFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
         toggleShowMoreButton(films, favoriteFilmCards, `isFavorite`);
       } else {
-        renderFilmsList(films.slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer, MAIN_BLOCK_MAX_CARDS);
+        renderFilmsList(films.slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer);
         const allFilmsCards = mainFilmsContainer.querySelectorAll(`.film-card`);
 
         if (allFilmsCards.length === films.length) {
@@ -240,9 +262,36 @@ const renderFilters = (container, filters, films) => {
   });
 };
 
-const renderSearch = () => {
+// Отрисовка поиска фильмов
+
+const renderSearch = (films) => {
   const searchComponent = new Search();
   headerLogo.insertAdjacentElement(`afterend`, searchComponent.render());
+
+  searchComponent.onChange = (value) => {
+    const searchedItems = films.filter((item) => item.title.toLowerCase().includes(value));
+    mainFilmsContainer.innerHTML = ``;
+
+    if (value === ``) {
+      renderFilmsList(films.slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer);
+      const allFilmsCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+
+      if (allFilmsCards.length === films.length) {
+        showMoreButton.classList.add(HIDDEN_CLASS);
+      } else {
+        showMoreButton.classList.remove(HIDDEN_CLASS);
+      }
+    } else {
+      renderFilmsList(searchedItems.slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer);
+      const searchedFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+
+      if (searchedFilmCards.length < MAIN_BLOCK_MAX_CARDS) {
+        showMoreButton.classList.add(HIDDEN_CLASS);
+      } else {
+        showMoreButton.classList.remove(HIDDEN_CLASS);
+      }
+    }
+  };
 };
 
 // Рассчет звания пользователя
@@ -316,7 +365,7 @@ api.getFilms()
       const visibleFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
       const activeItem = mainNavigation.querySelector(`.main-navigation__item--active`);
 
-      if (activeItem.id === `watchlist`) {
+      if (activeItem.id === `in_watchlist`) {
         filterMainFilmsByType(films, `isInWatchlist`, visibleFilmCards.length + MAIN_BLOCK_MAX_CARDS, visibleFilmCards.length);
         const allInWatchlistFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
 
@@ -348,7 +397,7 @@ api.getFilms()
       }
     });
 
-    renderSearch();
+    renderSearch(films);
   })
   .catch(() => {
     showPlaceholder(`Something went wrong while loading movies. Check your connection or try again later 😓`);
