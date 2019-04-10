@@ -1,4 +1,4 @@
-import ModelFilmCard from './model-film-card';
+import ModelFilmCard from './models/film-card';
 import {Method} from './enums';
 
 const checkStatus = (response) => {

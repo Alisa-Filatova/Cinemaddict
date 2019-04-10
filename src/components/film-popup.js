@@ -1,7 +1,8 @@
 import moment from 'moment';
+import 'moment-duration-format';
 import Component from './component';
-import {EMOJIES, MAX_RATE_NUMBER} from './constants';
-import {Keycode} from './enums';
+import {EMOJIES, MAX_RATE_NUMBER, HIDDEN_CLASS} from '../constants/index';
+import {Keycode} from '../enums/index';
 
 class FilmPopup extends Component {
 
@@ -21,27 +22,25 @@ class FilmPopup extends Component {
     this._score = data.score;
     this._genres = data.genres;
     this._ageLimit = data.ageLimit;
-    this._releaseCountry = data.releaseCountry;
     this._comments = data.comments;
     this._duration = data.duration;
-
     this._isInWatchlist = data.isInWatchlist;
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
 
-    this._onSetComment = null;
+    this._onAddComment = null;
+    this._onDeleteComment = null;
     this._onSetRating = null;
     this._onClose = null;
-
     this._onAddToWatchList = null;
     this._onMarkAsWatched = null;
     this._onAddToFavorite = null;
 
     this._onCloseClick = this._onCloseClick.bind(this);
-    this._onCommentChange = this._onCommentChange.bind(this);
+    this._onAddNewComment = this._onAddNewComment.bind(this);
+    this._onDeleteLastComment = this._onDeleteLastComment.bind(this);
     this._onEmojiChange = this._onEmojiChange.bind(this);
     this._onRatingChange = this._onRatingChange.bind(this);
-
     this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
     this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
     this._onAddToFavoriteClick = this._onAddToFavoriteClick.bind(this);
@@ -51,8 +50,12 @@ class FilmPopup extends Component {
     this._onClose = fn;
   }
 
-  set onSetComment(fn) {
-    this._onSetComment = fn;
+  set onAddComment(fn) {
+    this._onAddComment = fn;
+  }
+
+  set onDeleteComment(fn) {
+    this._onDeleteComment = fn;
   }
 
   set onSetRating(fn) {
@@ -79,16 +82,26 @@ class FilmPopup extends Component {
     }
   }
 
-  _onCommentChange(event) {
+  _onAddNewComment(event) {
     if (event.ctrlKey && event.keyCode === Keycode.ENTER
       && document.querySelector(`.film-details__comment-input`).value.trim() !== ``
     ) {
       const formData = new FormData(this._element.querySelector(`form`));
       const newData = this._processForm(formData);
+      this._element.querySelector(`.film-details__watched-reset`).classList.remove(HIDDEN_CLASS);
+      this._element.querySelector(`.film-details__watched-status`).textContent = `Comment added`;
 
-      if (typeof this._onSetComment === `function` && this._onSetComment(newData)) {
+      if (typeof this._onAddComment === `function` && this._onAddComment(newData)) {
         this.update(newData);
       }
+    }
+  }
+
+  _onDeleteLastComment(event) {
+    event.preventDefault();
+
+    if (typeof this._onDeleteComment === `function`) {
+      this._onDeleteComment();
     }
   }
 
@@ -186,6 +199,8 @@ class FilmPopup extends Component {
     this._score = data.score;
     this._element.querySelector(`.film-details__comments-list`).innerHTML = FilmPopup._onAddNewComment(this._comments);
     this._element.querySelector(`.film-details__comment-input`).value = ``;
+    this._element.querySelector(`.film-details__comments-count`).textContent = this._comments.length;
+    this._element.querySelector(`.film-details__user-rating-count`).textContent = this._score;
   }
 
   shake() {
@@ -202,9 +217,17 @@ class FilmPopup extends Component {
     this._element.querySelectorAll(`.film-details__comment-input`).disabled = true;
   }
 
+  deleteComment() {
+    const comments = this._element.querySelectorAll(`.film-details__comment`);
+    comments[comments.length - 1].remove();
+    this._element.querySelector(`.film-details__watched-reset`).classList.add(HIDDEN_CLASS);
+    this._element.querySelector(`.film-details__watched-status`).textContent = `Comment deleted`;
+  }
+
   disableRating() {
     this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
       item.disabled = true;
+      item.style.opacity = `0.5`;
     });
   }
 
@@ -215,7 +238,8 @@ class FilmPopup extends Component {
 
   unblockRating() {
     this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
-      item.disabled = true;
+      item.disabled = false;
+      item.style.opacity = `1`;
     });
   }
 
@@ -233,11 +257,10 @@ class FilmPopup extends Component {
 
     const filmDetails = [
       {title: `Director`, value: this._director},
-      {title: `Writers`, value: this._writers},
-      {title: `Actors`, value: this._actors},
-      {title: `Release Date`, value: `${moment(this._releaseDate).format(`DD MMMM YYYY`)}`},
-      {title: `Release Country`, value: this._releaseCountry},
-      {title: `Runtime`, value: `${moment.duration(this._duration).asMinutes()} min`},
+      {title: `Writers`, value: this._writers.join(`, `)},
+      {title: `Actors`, value: this._actors.join(`, `)},
+      {title: `Release Date`, value: `${moment(this._releaseDate).format(`DD MMMM YYYY`)} (${this._country})`},
+      {title: `Runtime`, value: `${moment.duration(this._duration, `minutes`).format(`m [min]`)}`},
       {title: `Country`, value: this._country},
       {title: `Genres`, value: this._genres.join(`, `)},
     ];
@@ -264,7 +287,7 @@ class FilmPopup extends Component {
       
                 <div class="film-details__rating">
                   <p class="film-details__total-rating">${this._rating}</p>
-                  <p class="film-details__user-rating">Your rate ${this._score}</p>
+                  <p class="film-details__user-rating">Your rate <span class="film-details__user-rating-count">${this._score}</span></p>
                 </div>
               </div>
               <table class="film-details__table">
@@ -321,13 +344,13 @@ class FilmPopup extends Component {
       
           <section class="film-details__user-rating-wrap">
             <div class="film-details__user-rating-controls">
-              <span class="film-details__watched-status ${this._isWatched && `film-details__watched-status--active`}">Already watched</span>
-              <button class="film-details__watched-reset" type="button">undo</button>
-            </div>
-      
-            <div class="film-details__user-score">
-              <div class="film-details__user-rating-poster">
-                <img src="${this._poster}" alt="film-poster" class="film-details__user-rating-img">
+              <span class="film-details__watched-status film-details__watched-status--active">${this._isWatched ? `Already watched` : `Will watch`}</span>
+                <button class="film-details__watched-reset visually-hidden" type="button">undo</button>
+              </div>
+        
+              <div class="film-details__user-score">
+                <div class="film-details__user-rating-poster">
+                  <img src="${this._poster}" alt="film-poster" class="film-details__user-rating-img">
               </div>
       
               <section class="film-details__user-rating-inner">
@@ -356,7 +379,9 @@ class FilmPopup extends Component {
     this._element.querySelector(`.film-details__close-btn`)
       .addEventListener(`click`, this._onCloseClick);
     this._element.querySelector(`.film-details__comment-input`)
-      .addEventListener(`keydown`, this._onCommentChange);
+      .addEventListener(`keydown`, this._onAddNewComment);
+    this._element.querySelector(`.film-details__watched-reset`)
+      .addEventListener(`click`, this._onDeleteLastComment);
     this._element.querySelector(`form`)
       .addEventListener(`change`, this._onEmojiChange);
     this._element.querySelector(`form`)
@@ -373,7 +398,9 @@ class FilmPopup extends Component {
     this._element.querySelector(`.film-details__close-btn`)
       .removeEventListener(`click`, this._onCloseClick);
     this._element.querySelector(`.film-details__comment-input`)
-      .removeEventListener(`keydown`, this._onCommentChange);
+      .removeEventListener(`keydown`, this._onAddNewComment);
+    this._element.querySelector(`.film-details__watched-reset`)
+      .removeEventListener(`click`, this._onDeleteLastComment);
     this._element.querySelector(`form`)
       .removeEventListener(`change`, this._onEmojiChange);
     this._element.querySelector(`form`)

@@ -36,7 +36,7 @@ class Filter extends Component {
 
   get template() {
     return (
-      `<a href="" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">
+      `<a id="${this._type}" href="" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">
         ${this._title} ${this._count === null ? `` : `<span class="main-navigation__item-count">${this._count}</span>`}
       </a>`
     );
@@ -54,4 +54,3 @@ class Filter extends Component {
 }
 
 export default Filter;
-

@@ -1,8 +1,9 @@
 import moment from 'moment';
+import 'moment-duration-format';
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import Component from './component';
-import {createElement, isNumeric} from './utils';
+import {createElement, isNumeric} from '../utils/index';
 
 class Statistic extends Component {
   constructor(films) {
@@ -128,12 +129,7 @@ class Statistic extends Component {
 
   _getFilmsRuntimeTemplate() {
     const totalDuration = this._filteredFilms.reduce((duration, film) => duration + film.duration, 0);
-    return (
-      `${moment.duration(totalDuration).hours()} 
-       <span class="statistic__item-description">h</span> 
-       ${moment.duration(totalDuration).minutes()} 
-       <span class="statistic__item-description">m</span>`
-    );
+    return `${moment.duration(totalDuration, `minutes`).format(`hh[h] mm[m]`)}`;
   }
 
   _getTopGenresTemplate() {
