@@ -102,6 +102,22 @@ const renderFilmsList = (films, container, showControls) => {
         });
     };
 
+    filmPopup.onDeleteComment = () => {
+      data.comments.pop();
+      filmPopup._comments = data.comments;
+      filmCard._comments = data.comments;
+      filmPopup.deleteComment();
+
+      api.updateFilm({id: data.id, data: data.toRAW()})
+        .then((newComment) => {
+          filmCard.update(newComment);
+          filmPopup.update(newComment);
+        })
+        .catch(() => {
+          filmPopup.shake();
+        });
+    };
+
     // Установка оценки фильма пользователем через popup
 
     filmPopup.onSetRating = (newData) => {
@@ -294,7 +310,7 @@ const renderSearch = (films) => {
   };
 };
 
-// Рассчет звания пользователя
+// Рассчет звания пользователя, на основе кол-ва просмотреных фильмов
 
 const getProfileRating = (films) => {
   const count = countFilmsWithStatus(films, `isWatched`);
@@ -337,11 +353,13 @@ api.getFilms()
       .sort(compareCommentsCount)
       .slice(0, EXTRA_BLOCK_MAX_CARDS), mostCommentedFilmsContainer, false);
     renderFilters(mainNavigation, FILTERS_DATA, films);
+    renderSearch(films);
 
     // Отрисовка статистики
 
     statisticButton.addEventListener(`click`, () => {
       const statisticComponent = new Statistic(films);
+      statisticComponent.render();
 
       if (statisticButton.classList.contains(`main-navigation__item--active`)) {
         statisticButton.classList.remove(`main-navigation__item--active`);
@@ -352,7 +370,7 @@ api.getFilms()
         statisticButton.classList.add(`main-navigation__item--active`);
         statisticContainer.innerHTML = ``;
         filmsContainer.classList.add(HIDDEN_CLASS);
-        statisticContainer.appendChild(statisticComponent.render());
+        statisticContainer.appendChild(statisticComponent.element);
       }
     });
 
@@ -396,8 +414,6 @@ api.getFilms()
         }
       }
     });
-
-    renderSearch(films);
   })
   .catch(() => {
     showPlaceholder(`Something went wrong while loading movies. Check your connection or try again later 😓`);

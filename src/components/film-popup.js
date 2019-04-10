@@ -1,7 +1,7 @@
 import moment from 'moment';
 import 'moment-duration-format';
 import Component from './component';
-import {EMOJIES, MAX_RATE_NUMBER} from '../constants/index';
+import {EMOJIES, MAX_RATE_NUMBER, HIDDEN_CLASS} from '../constants/index';
 import {Keycode} from '../enums/index';
 
 class FilmPopup extends Component {
@@ -24,7 +24,6 @@ class FilmPopup extends Component {
     this._ageLimit = data.ageLimit;
     this._comments = data.comments;
     this._duration = data.duration;
-
     this._isInWatchlist = data.isInWatchlist;
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
@@ -33,7 +32,6 @@ class FilmPopup extends Component {
     this._onDeleteComment = null;
     this._onSetRating = null;
     this._onClose = null;
-
     this._onAddToWatchList = null;
     this._onMarkAsWatched = null;
     this._onAddToFavorite = null;
@@ -43,7 +41,6 @@ class FilmPopup extends Component {
     this._onDeleteLastComment = this._onDeleteLastComment.bind(this);
     this._onEmojiChange = this._onEmojiChange.bind(this);
     this._onRatingChange = this._onRatingChange.bind(this);
-
     this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
     this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
     this._onAddToFavoriteClick = this._onAddToFavoriteClick.bind(this);
@@ -91,7 +88,8 @@ class FilmPopup extends Component {
     ) {
       const formData = new FormData(this._element.querySelector(`form`));
       const newData = this._processForm(formData);
-      this._element.querySelector(`.film-details__user-rating-controls`).classList.remove(`visually-hidden`);
+      this._element.querySelector(`.film-details__watched-reset`).classList.remove(HIDDEN_CLASS);
+      this._element.querySelector(`.film-details__watched-status`).textContent = `Comment added`;
 
       if (typeof this._onAddComment === `function` && this._onAddComment(newData)) {
         this.update(newData);
@@ -99,8 +97,9 @@ class FilmPopup extends Component {
     }
   }
 
-  // TODO
-  _onDeleteLastComment() {
+  _onDeleteLastComment(event) {
+    event.preventDefault();
+
     if (typeof this._onDeleteComment === `function`) {
       this._onDeleteComment();
     }
@@ -218,9 +217,17 @@ class FilmPopup extends Component {
     this._element.querySelectorAll(`.film-details__comment-input`).disabled = true;
   }
 
+  deleteComment() {
+    const comments = this._element.querySelectorAll(`.film-details__comment`);
+    comments[comments.length - 1].remove();
+    this._element.querySelector(`.film-details__watched-reset`).classList.add(HIDDEN_CLASS);
+    this._element.querySelector(`.film-details__watched-status`).textContent = `Comment deleted`;
+  }
+
   disableRating() {
     this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
       item.disabled = true;
+      item.style.opacity = `0.5`;
     });
   }
 
@@ -232,6 +239,7 @@ class FilmPopup extends Component {
   unblockRating() {
     this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
       item.disabled = false;
+      item.style.opacity = `1`;
     });
   }
 
@@ -335,14 +343,14 @@ class FilmPopup extends Component {
           </section>
       
           <section class="film-details__user-rating-wrap">
-            <div class="film-details__user-rating-controls visually-hidden">
-              <span class="film-details__watched-status ${this._isWatched && `film-details__watched-status--active`}">${this._isWatched ? `Already watched` : `Will watch`}</span>
-              <button class="film-details__watched-reset" type="button">undo</button>
-            </div>
-      
-            <div class="film-details__user-score">
-              <div class="film-details__user-rating-poster">
-                <img src="${this._poster}" alt="film-poster" class="film-details__user-rating-img">
+            <div class="film-details__user-rating-controls">
+              <span class="film-details__watched-status film-details__watched-status--active">${this._isWatched ? `Already watched` : `Will watch`}</span>
+                <button class="film-details__watched-reset visually-hidden" type="button">undo</button>
+              </div>
+        
+              <div class="film-details__user-score">
+                <div class="film-details__user-rating-poster">
+                  <img src="${this._poster}" alt="film-poster" class="film-details__user-rating-img">
               </div>
       
               <section class="film-details__user-rating-inner">
@@ -373,7 +381,7 @@ class FilmPopup extends Component {
     this._element.querySelector(`.film-details__comment-input`)
       .addEventListener(`keydown`, this._onAddNewComment);
     this._element.querySelector(`.film-details__watched-reset`)
-      .addEventListener(`keydown`, this._onDeleteLastComment);
+      .addEventListener(`click`, this._onDeleteLastComment);
     this._element.querySelector(`form`)
       .addEventListener(`change`, this._onEmojiChange);
     this._element.querySelector(`form`)
@@ -392,7 +400,7 @@ class FilmPopup extends Component {
     this._element.querySelector(`.film-details__comment-input`)
       .removeEventListener(`keydown`, this._onAddNewComment);
     this._element.querySelector(`.film-details__watched-reset`)
-      .removeEventListener(`keydown`, this._onDeleteLastComment);
+      .removeEventListener(`click`, this._onDeleteLastComment);
     this._element.querySelector(`form`)
       .removeEventListener(`change`, this._onEmojiChange);
     this._element.querySelector(`form`)
