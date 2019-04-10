@@ -15,4 +15,5 @@ export const Time = {
 
 export const Keycode = {
   ENTER: 13,
+  ESC: 27,
 };
