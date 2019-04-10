@@ -16,7 +16,6 @@ class FilmCard extends Component {
     this._genre = data.genres;
     this._comments = data.comments;
     this._score = data.score;
-
     this._isInWatchlist = data.isInWatchlist;
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
@@ -31,6 +30,22 @@ class FilmCard extends Component {
     this._onAddToWatchListClick = this._onAddToWatchListClick.bind(this);
     this._onMarkAsWatchedClick = this._onMarkAsWatchedClick.bind(this);
     this._onAddToFavoriteClick = this._onAddToFavoriteClick.bind(this);
+  }
+
+  set onCommentsClick(fn) {
+    this._onCommentsClick = fn;
+  }
+
+  set onAddToWatchList(fn) {
+    this._onAddToWatchList = fn;
+  }
+
+  set onMarkAsWatched(fn) {
+    this._onMarkAsWatched = fn;
+  }
+
+  set onAddToFavorite(fn) {
+    this._onAddToFavorite = fn;
   }
 
   _onCommentsBtnClick(event) {
@@ -73,49 +88,27 @@ class FilmCard extends Component {
     this._element.querySelector(`.film-card__comments`).innerHTML = this._commentsCountTemplate();
   }
 
-  set onCommentsClick(fn) {
-    this._onCommentsClick = fn;
-  }
-
-  set onAddToWatchList(fn) {
-    this._onAddToWatchList = fn;
-  }
-
-  set onMarkAsWatched(fn) {
-    this._onMarkAsWatched = fn;
-  }
-
-  set onAddToFavorite(fn) {
-    this._onAddToFavorite = fn;
+  _updateControlState(state, button) {
+    if (state) {
+      button.classList.add(`film-card__controls-item--active`);
+    } else if (!state) {
+      button.classList.remove(`film-card__controls-item--active`);
+    }
   }
 
   update(data) {
     const watchListBtn = this._element.querySelector(`.film-card__controls-item--add-to-watchlist`);
     const watchedBtn = this._element.querySelector(`.film-card__controls-item--mark-as-watched`);
     const favoriteBtn = this._element.querySelector(`.film-card__controls-item--favorite`);
+
     this._isInWatchlist = data.isInWatchlist;
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
     this._comments = data.comments;
     this._updateCommentsCount();
-
-    if (this._isInWatchlist) {
-      watchListBtn.classList.add(`film-card__controls-item--active`);
-    } else if (!this._isInWatchlist) {
-      watchListBtn.classList.remove(`film-card__controls-item--active`);
-    }
-
-    if (this._isWatched) {
-      watchedBtn.classList.add(`film-card__controls-item--active`);
-    } else if (!this._isWatched) {
-      watchedBtn.classList.remove(`film-card__controls-item--active`);
-    }
-
-    if (this._isFavorite) {
-      favoriteBtn.classList.add(`film-card__controls-item--active`);
-    } else if (!this._isFavorite) {
-      favoriteBtn.classList.remove(`film-card__controls-item--active`);
-    }
+    this._updateControlState(this._isInWatchlist, watchListBtn);
+    this._updateControlState(this._isWatched, watchedBtn);
+    this._updateControlState(this._isFavorite, favoriteBtn);
   }
 
   get template() {
