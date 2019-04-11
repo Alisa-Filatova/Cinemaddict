@@ -35,7 +35,10 @@ const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 const store = new Store({key: FILMS_STORE_KEY, storage: localStorage});
 const provider = new Provider({api, store, generateId: () => String(Date.now())});
 
-window.addEventListener(`offline`, () => document.title = `${document.title}[OFFLINE]`);
+window.addEventListener(`offline`, () => {
+  document.title = `${document.title}[OFFLINE]`;
+});
+
 window.addEventListener(`online`, () => {
   document.title = document.title.split(`[OFFLINE]`)[0];
   provider.syncFilms();
@@ -195,14 +198,22 @@ const renderFilmsList = (films, container, showControls) => {
     // Закрытие popup
 
     filmPopup.onClose = () => {
-      filmCard.update(data);
-      filmPopup.destroy();
+      provider.updateFilm({id: data.id, data: data.toRAW()})
+        .then((newData) => {
+          filmPopup.update(newData);
+          filmCard.update(newData);
+          filmPopup.destroy();
+        });
     };
 
     document.addEventListener(`keydown`, (event) => {
       if (event.keyCode === Keycode.ESC) {
-        filmCard.update(data);
-        filmPopup.destroy();
+        provider.updateFilm({id: data.id, data: data.toRAW()})
+          .then((newData) => {
+            filmPopup.update(newData);
+            filmCard.update(newData);
+            filmPopup.destroy();
+          });
       }
     });
   });
@@ -332,9 +343,9 @@ const getProfileRating = (films) => {
 
   if (count <= 10 && count !== 0) {
     return UserRank.NOVICE;
-  } else if (count >= 11 && count < 20) {
+  } else if (count >= 11 && count <= 20) {
     return UserRank.FAN;
-  } else if (count >= 20) {
+  } else if (count >= 21) {
     return UserRank.MOVIE_BUFF;
   } else {
     return null;

@@ -49,6 +49,16 @@
   <section class="footer__logo logo logo--smaller">Moowle</section>
   <section class="footer__statistics"></section>
 </footer>
+
+<script>
+  navigator.serviceWorker.register(`./service-worker.js`)
+    .then(function(reg) {
+      console.log(`Registration succeeded. Scope is ${reg.scope}`);
+    })
+    .catch(function(error) {
+      console.log(`Registration failed with ${error}`);
+    });
+</script>
 <script type="module" src="./bundle.js"></script>
 </body>
 </html>

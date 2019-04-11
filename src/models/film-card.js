@@ -1,7 +1,7 @@
 class ModelFilmCard {
   constructor(data) {
     this.id = data[`id`];
-    this.title = data[`film_info`][`title`] || ``;
+    this.title = data[`film_info`][`title`];
     this.titleOriginal = data[`film_info`][`alternative_title`] || `-`;
     this.description = data[`film_info`][`description`] || `-`;
     this.director = data[`film_info`][`director`] || `-`;
@@ -25,6 +25,24 @@ class ModelFilmCard {
   toRAW() {
     return {
       'id': this.id,
+      'film_info': {
+        'title': this.title,
+        'poster': this.poster,
+        'alternative_title': this.titleOriginal,
+        'actors': this.actors,
+        'age_rating': this.ageLimit,
+        'description': this.description,
+        'release': {
+          'date': this.releaseDate,
+          'release_country': this.country,
+        },
+        'runtime': this.duration,
+        'genre': this.genres,
+        'director': this.director,
+        'writers': this.writers,
+        'total_rating': this.rating,
+        'personal_rating': this.score,
+      },
       'comments': this.comments,
       'user_details': {
         'watchlist': this.isInWatchlist,

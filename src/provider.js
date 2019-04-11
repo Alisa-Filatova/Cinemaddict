@@ -34,9 +34,9 @@ const Provider = class {
     } else {
       const rawFilmsMap = this._store.getAll();
       const rawFilms = objectToArray(rawFilmsMap);
-      const tasks = ModelFilmCard.parseFilmCards(rawFilms);
+      const films = ModelFilmCard.parseFilmCards(rawFilms);
 
-      return Promise.resolve(tasks);
+      return Promise.resolve(films);
     }
   }
 
