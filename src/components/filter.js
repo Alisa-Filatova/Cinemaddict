@@ -10,7 +10,10 @@ class Filter extends Component {
 
     this._onFilter = null;
     this._onFilterClick = this._onFilterClick.bind(this);
-    this._onChangeActive = this._onChangeActive.bind(this);
+  }
+
+  set onFilter(fn) {
+    this._onFilter = fn;
   }
 
   _onFilterClick(event) {
@@ -21,35 +24,23 @@ class Filter extends Component {
     }
   }
 
-  _onChangeActive() {
-    this._isActive = !this._isActive;
-  }
-
-  set onFilter(fn) {
-    this._onFilter = fn;
-  }
-
   update(data) {
     this._isActive = data.isActive;
     this._count = data.count;
   }
 
   get template() {
-    return (
-      `<a id="${this._type}" href="" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">
+    return `<a id="${this._type}" href="" class="main-navigation__item ${this._isActive ? `main-navigation__item--active` : ``}">
         ${this._title} ${this._count === null ? `` : `<span class="main-navigation__item-count">${this._count}</span>`}
-      </a>`
-    );
+      </a>`;
   }
 
   addEventListeners() {
     this._element.addEventListener(`click`, this._onFilterClick);
-    this._element.addEventListener(`click`, this._onChangeActive);
   }
 
   removeEventListeners() {
     this._element.removeEventListener(`click`, this._onFilterClick);
-    this._element.removeEventListener(`click`, this._onChangeActive);
   }
 }
 
