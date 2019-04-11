@@ -5,9 +5,12 @@ import Statistic from './components/statistics';
 import Search from './components/search';
 import {Keycode, UserRank, FilmState, FilterType} from './enums';
 import API from './api.js';
+import Provider from './provider.js';
+import Store from './store.js';
 import {
   AUTHORIZATION,
   END_POINT,
+  FILMS_STORE_KEY,
   MAIN_BLOCK_MAX_CARDS,
   EXTRA_BLOCK_MAX_CARDS,
   HIDDEN_CLASS,
@@ -29,6 +32,14 @@ const profileRatingContainer = document.querySelector(`.profile__rating`);
 const headerLogo = document.querySelector(`.header__logo`);
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
+const store = new Store({key: FILMS_STORE_KEY, storage: localStorage});
+const provider = new Provider({api, store, generateId: () => String(Date.now())});
+
+window.addEventListener(`offline`, () => document.title = `${document.title}[OFFLINE]`);
+window.addEventListener(`online`, () => {
+  document.title = document.title.split(`[OFFLINE]`)[0];
+  provider.syncFilms();
+});
 
 // Сортировка дополнительных блоков
 
@@ -57,12 +68,9 @@ const renderFilmsList = (films, container, showControls) => {
       data.isInWatchlist = filmCard._isInWatchlist;
       filmPopup._isInWatchlist = data.isInWatchlist;
 
-      api.updateFilm({id: data.id, data: data.toRAW()})
+      provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => {
           filmCard.update(newData);
-          // TODO
-          const watchlistCounter = mainNavigation.querySelector(`#in_watchlist > .main-navigation__item-count`);
-          watchlistCounter.textContent = countFilmsWithStatus(films, FilmState.IN_WATCHLIST);
         });
     };
 
@@ -73,7 +81,7 @@ const renderFilmsList = (films, container, showControls) => {
       data.isWatched = filmCard._isWatched;
       filmPopup._isWatched = data.isWatched;
 
-      api.updateFilm({id: data.id, data: data.toRAW()})
+      provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => filmCard.update(newData));
     };
 
@@ -84,7 +92,7 @@ const renderFilmsList = (films, container, showControls) => {
       data.isFavorite = filmCard._isFavorite;
       filmPopup._isFavorite = data.isFavorite;
 
-      api.updateFilm({id: data.id, data: data.toRAW()})
+      provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => filmCard.update(newData));
     };
 
@@ -96,7 +104,7 @@ const renderFilmsList = (films, container, showControls) => {
       filmCard._comments = data.comments;
       filmPopup.disableComments();
 
-      api.updateFilm({id: data.id, data: data.toRAW()})
+      provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newComment) => {
           filmPopup.unblockComments();
           filmCard.update(newComment);
@@ -114,7 +122,7 @@ const renderFilmsList = (films, container, showControls) => {
       filmCard._comments = data.comments;
       filmPopup.deleteComment();
 
-      api.updateFilm({id: data.id, data: data.toRAW()})
+      provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newComment) => {
           filmCard.update(newComment);
           filmPopup.update(newComment);
@@ -130,7 +138,7 @@ const renderFilmsList = (films, container, showControls) => {
       data.score = newData.score;
       filmPopup.disableRating();
 
-      api.updateFilm({id: data.id, data: data.toRAW()})
+      provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newScore) => {
           filmPopup.unblockRating();
           filmPopup.update(newScore);
@@ -149,7 +157,7 @@ const renderFilmsList = (films, container, showControls) => {
       data.isInWatchlist = filmPopup._isInWatchlist;
       filmCard._isInWatchlist = data.isInWatchlist;
 
-      api.updateFilm({id: data.id, data: data.toRAW()})
+      provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => {
           filmPopup.update(newData);
           filmCard.update(newData);
@@ -163,7 +171,7 @@ const renderFilmsList = (films, container, showControls) => {
       data.isWatched = filmPopup._isWatched;
       filmCard._isWatched = data.isWatched;
 
-      api.updateFilm({id: data.id, data: data.toRAW()})
+      provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => {
           filmPopup.update(newData);
           filmCard.update(newData);
@@ -177,7 +185,7 @@ const renderFilmsList = (films, container, showControls) => {
       data.isFavorite = filmPopup._isFavorite;
       filmCard._isFavorite = data.isFavorite;
 
-      api.updateFilm({id: data.id, data: data.toRAW()})
+      provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => {
           filmPopup.update(newData);
           filmCard.update(newData);
@@ -348,7 +356,7 @@ showPlaceholder(`🎬 Loading movies...`);
 
 // Загрузка данных с сервера
 
-api.getFilms()
+provider.getFilms()
   .then((films) => {
     removePlaceholder();
     renderFilmsList(films

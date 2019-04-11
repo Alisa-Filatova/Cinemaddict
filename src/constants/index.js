@@ -2,6 +2,7 @@ import {FilterType} from '../enums';
 
 export const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
 export const END_POINT = `https://es8-demo-srv.appspot.com/moowle`;
+export const FILMS_STORE_KEY = `films-store-key`;
 export const MAIN_BLOCK_MAX_CARDS = 5;
 export const EXTRA_BLOCK_MAX_CARDS = 2;
 export const MAX_RATE_NUMBER = 9;
