@@ -1,7 +1,7 @@
 import moment from 'moment';
 import 'moment-duration-format';
 import Component from './component';
-import {SHORT_DESCRIPTION_MAX_SYMBOLS} from '../constants/index';
+import {SHORT_DESCRIPTION_MAX_SYMBOLS} from '../constants';
 
 class FilmCard extends Component {
   constructor(data, showControls = true) {
@@ -80,18 +80,18 @@ class FilmCard extends Component {
     }
   }
 
-  _commentsCountTemplate() {
+  _renderCommentsPluralTemplate() {
     return `${this._comments.length} comment${this._comments.length > 1 ? `s` : ``}`;
   }
 
   _updateCommentsCount() {
-    this._element.querySelector(`.film-card__comments`).innerHTML = this._commentsCountTemplate();
+    this._element.querySelector(`.film-card__comments`).innerHTML = this._renderCommentsPluralTemplate();
   }
 
-  _updateControlState(state, button) {
+  static _updateControlActive(state, button) {
     if (state) {
       button.classList.add(`film-card__controls-item--active`);
-    } else if (!state) {
+    } else {
       button.classList.remove(`film-card__controls-item--active`);
     }
   }
@@ -105,17 +105,18 @@ class FilmCard extends Component {
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
     this._comments = data.comments;
+
     this._updateCommentsCount();
-    this._updateControlState(this._isInWatchlist, watchListBtn);
-    this._updateControlState(this._isWatched, watchedBtn);
-    this._updateControlState(this._isFavorite, favoriteBtn);
+    FilmCard._updateControlActive(this._isInWatchlist, watchListBtn);
+    FilmCard._updateControlActive(this._isWatched, watchedBtn);
+    FilmCard._updateControlActive(this._isFavorite, favoriteBtn);
   }
 
   get template() {
     return (
       `<article class="film-card ${this._showControls ? `` : `film-card--no-controls`}">
         <h3 class="film-card__title">${this._title}</h3>
-        <p class="film-card__rating">${this._rating}</p>
+        <p class="film-card__rating">${this._rating.toFixed(1)}</p>
         <p class="film-card__info">
           <span class="film-card__year">${moment(this._releaseDate).format(`YYYY`)}</span>
           <span class="film-card__duration">${moment.duration(this._duration, `minutes`).format(`h:mm`)}</span>
@@ -123,7 +124,7 @@ class FilmCard extends Component {
         </p>
         <img src="${this._poster}" alt="${this._title}" class="film-card__poster">
         <p class="film-card__description">${this._description.length > 1 ? this._description.slice(0, SHORT_DESCRIPTION_MAX_SYMBOLS) : ``}</p>
-        <button class="film-card__comments">${this._commentsCountTemplate()}</button>
+        <button class="film-card__comments">${this._renderCommentsPluralTemplate()}</button>
         <form class="film-card__controls ${this._showControls ? `` : `visually-hidden`}">
           <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist ${this._isInWatchlist ? `film-card__controls-item--active` : ``}">
             <!--Add to watchlist--> WL

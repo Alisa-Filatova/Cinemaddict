@@ -50,7 +50,7 @@ class ModelFilmCard {
         'favorite': this.isFavorite,
         'personal_rating': this.score,
         'watching_date': this.watchDate,
-      }
+      },
     };
   }
 

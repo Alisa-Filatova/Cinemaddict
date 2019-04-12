@@ -1,13 +1,14 @@
 const CACHE_NAME = `MOOWLE_V1`;
 
 self.addEventListener(`install`, (event) => {
-  const openCache = caches.open(CACHE_NAME)
+  event.waitUntil(
+    caches.open(CACHE_NAME)
     .then((cache) => {
       return cache.addAll([
         `./`,
         `./index.html`,
         `./bundle.js`,
-        `./css/`,
+        `./css/normalize.css`,
         `./css/main.css`,
         `./images/background.png`,
         `./images/icon-favorite.png`,
@@ -24,8 +25,8 @@ self.addEventListener(`install`, (event) => {
         `./images/posters/three-friends.jpg`,
       ])
     })
-
-    event.waitUntil(openCache);
+    .catch((error) => {console.error(error)})
+  );
 });
 
 self.addEventListener(`activate`, () => {
@@ -34,20 +35,10 @@ self.addEventListener(`activate`, () => {
 
 self.addEventListener(`fetch`, (event) => {
   event.respondWith(
-    fetch(event.request)
-    .then(function (response) {
-      caches.open(CACHE_NAME)
-      .then((cache) => cache.put(event.request, response.clone()));
-
-      return response.clone();
-    })
-    .catch(() => {
-      caches.match(event.request)
+    caches.match(event.request)
       .then((response) => {
-        console.log(`Find in cache`, {response});
-        return response;
-      });
+      return response ? response : fetch(event.request);
     })
-    .catch((error) => console.error(error))
+    .catch((error) => {console.error(error)})
   );
 });
