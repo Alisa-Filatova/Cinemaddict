@@ -18,6 +18,8 @@ import {
 } from './constants';
 
 const ACTIVE_MENU_ITEM_CLASS = `main-navigation__item--active`;
+const LOADING_MESSAGE = `🎬 Loading movies...`;
+const ERROR_MESSAGE = `Something went wrong while loading movies. Check your connection or try again later 😓`;
 const mainNavigation = document.querySelector(`.main-navigation`);
 const filmsContainer = document.querySelector(`.films`);
 const mainFilmsContainer = filmsContainer.querySelector(`.films-list .films-list__container`);
@@ -50,8 +52,12 @@ const compareRating = (a, b) => b.rating - a.rating;
 const compareCommentsCount = (a, b) => b.comments.length - a.comments.length;
 
 // Отрисовка списка фильмов
-
-const renderFilmsList = (films, container, showControls) => {
+/**
+ * @param {Array} films
+ * @param {Element} container
+ * @param {Boolean} showControls
+ */
+const renderFilmsList = (films, container, showControls = true) => {
   films.forEach((data) => {
     const filmCard = new FilmCard(data, showControls);
     const filmPopup = new FilmPopup(data);
@@ -221,10 +227,21 @@ const renderFilmsList = (films, container, showControls) => {
 
 // Подсчет кол-ва фильмов по статусу
 
+/**
+ * @param {Array} films
+ * @param {String} status
+ * @return {Number}
+ */
 const countFilmsWithStatus = (films, status) => films.filter((film) => film[status]).length;
 
-// Сортировка и отрисовка фильмов по типу
-
+// Сортировка и отрисовка фильмов по типу и отрисовка списка фильмов
+/**
+ * @param {Array} films
+ * @param {String} type
+ * @param {Number} endAmount
+ * @param {Number} startAmount
+ * @return {Element}
+ */
 const filterMainFilmsByType = (films, type, endAmount, startAmount = 0) =>
   renderFilmsList(films
     .filter((film) => film[type])
@@ -232,7 +249,11 @@ const filterMainFilmsByType = (films, type, endAmount, startAmount = 0) =>
   );
 
 // Переключение отображения кнопки ShowMore
-
+/**
+ * @param {Array} filmsData
+ * @param {NodeListOf<Element>} currentTypeFilms
+ * @param {String} state
+ */
 const toggleShowMoreButton = (filmsData, currentTypeFilms, state) => {
   if (countFilmsWithStatus(filmsData, state) === currentTypeFilms.length || currentTypeFilms.length === 0) {
     showMoreButton.classList.add(HIDDEN_CLASS);
@@ -242,7 +263,11 @@ const toggleShowMoreButton = (filmsData, currentTypeFilms, state) => {
 };
 
 // Отрисовка фильтров
-
+/**
+ * @param {Element} container
+ * @param {Array} filters
+ * @param {Array} films
+ */
 const renderFilters = (container, filters, films) => {
   filters.reverse().forEach((filterItem) => {
     const filterData = Object.assign(filterItem);
@@ -305,7 +330,9 @@ const renderFilters = (container, filters, films) => {
 };
 
 // Отрисовка поиска фильмов
-
+/**
+ * @param {Array} films
+ */
 const renderSearch = (films) => {
   const searchComponent = new Search();
   headerLogo.insertAdjacentElement(`afterend`, searchComponent.render());
@@ -337,7 +364,10 @@ const renderSearch = (films) => {
 };
 
 // Рассчет звания пользователя
-
+/**
+ * @param {Array} films
+ * @return {String}
+ */
 const getProfileRating = (films) => {
   const count = countFilmsWithStatus(films, FilmState.WATCHED);
 
@@ -353,7 +383,9 @@ const getProfileRating = (films) => {
 };
 
 // Плейсхолдер для загрузки
-
+/**
+ * @param {String} message
+ */
 const showPlaceholder = (message) => {
   placeholderContainer.textContent = message;
   placeholderContainer.classList.remove(HIDDEN_CLASS);
@@ -363,10 +395,12 @@ const removePlaceholder = () => {
   placeholderContainer.classList.add(HIDDEN_CLASS);
 };
 
-showPlaceholder(`🎬 Loading movies...`);
+showPlaceholder(LOADING_MESSAGE);
 
 // Загрузка данных с сервера
-
+/**
+ * @param {Array} films
+ */
 provider.getFilms()
   .then((films) => {
     removePlaceholder();
@@ -437,5 +471,5 @@ provider.getFilms()
     });
   })
   .catch(() => {
-    showPlaceholder(`Something went wrong while loading movies. Check your connection or try again later 😓`);
+    showPlaceholder(ERROR_MESSAGE);
   });

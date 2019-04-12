@@ -122,7 +122,7 @@ class FilmCard extends Component {
           <span class="film-card__genre">${this._genre.length > 0 ? this._genre[0] : ``}</span>
         </p>
         <img src="${this._poster}" alt="${this._title}" class="film-card__poster">
-        <p class="film-card__description">${this._description.slice(0, SHORT_DESCRIPTION_MAX_SYMBOLS)}</p>
+        <p class="film-card__description">${this._description.length > 1 ? this._description.slice(0, SHORT_DESCRIPTION_MAX_SYMBOLS) : ``}</p>
         <button class="film-card__comments">${this._commentsCountTemplate()}</button>
         <form class="film-card__controls ${this._showControls ? `` : `visually-hidden`}">
           <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist ${this._isInWatchlist ? `film-card__controls-item--active` : ``}">

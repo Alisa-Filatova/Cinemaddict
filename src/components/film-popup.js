@@ -88,6 +88,7 @@ class FilmPopup extends Component {
     ) {
       const formData = new FormData(this._element.querySelector(`form`));
       const newData = this._processForm(formData);
+
       this._element.querySelector(`.film-details__watched-reset`).classList.remove(HIDDEN_CLASS);
       this._element.querySelector(`.film-details__watched-status`).textContent = `Comment added`;
 
