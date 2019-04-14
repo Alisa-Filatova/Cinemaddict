@@ -105,9 +105,7 @@ const renderFilmsList = (films, container, showControls = true) => {
           filmCard.update(newData);
           filmPopup.partialUpdate(newData);
           updateFilmsFilterCount(newData.isInWatchlist, FilterType.WATCHLIST);
-        })
-        // eslint-disable-next-line no-console
-        .catch(() => console.error(`some error with watchlist`));
+        });
     };
 
     filmCard.onMarkAsWatched = () => {
@@ -118,9 +116,7 @@ const renderFilmsList = (films, container, showControls = true) => {
           filmCard.update(newData);
           filmPopup.partialUpdate(newData);
           updateFilmsFilterCount(newData.isWatched, FilterType.HISTORY);
-        })
-        // eslint-disable-next-line no-console
-        .catch(() => console.error(`some error with watched`));
+        });
     };
 
     filmCard.onAddToFavorite = () => {
@@ -131,9 +127,7 @@ const renderFilmsList = (films, container, showControls = true) => {
           filmCard.update(newData);
           filmPopup.partialUpdate(newData);
           updateFilmsFilterCount(newData.isFavorite, FilterType.FAVORITES);
-        })
-        // eslint-disable-next-line no-console
-        .catch(() => console.error(`some error with favorite`));
+        });
     };
 
     filmPopup.onAddComment = (newData) => {

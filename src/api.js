@@ -52,8 +52,6 @@ class API {
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
       .then(checkStatus)
       .catch((error) => {
-        // eslint-disable-next-line no-console
-        console.error(`fetch error: ${error}`);
         throw error;
       });
   }
