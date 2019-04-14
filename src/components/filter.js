@@ -27,6 +27,9 @@ class Filter extends Component {
   update(data) {
     this._isActive = data.isActive;
     this._count = data.count;
+    if (this._count !== null) {
+      this._element.querySelector(`.main-navigation__item-count`).textContent = this._count;
+    }
   }
 
   get template() {

@@ -13,7 +13,7 @@ const toJSON = (response) => {
   return response.json();
 };
 
-const API = class {
+class API {
   constructor({endPoint, authorization}) {
     this._endPoint = endPoint;
     this._authorization = authorization;
@@ -51,11 +51,12 @@ const API = class {
 
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
       .then(checkStatus)
-      .catch((err) => {
-        console.error(`fetch error: ${err}`);
-        throw err;
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(`fetch error: ${error}`);
+        throw error;
       });
   }
-};
+}
 
 export default API;

@@ -3,7 +3,16 @@ import 'moment-duration-format';
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import Component from './component';
-import {createElement, isNumeric} from '../utils/index';
+import {createElement, isNumeric} from '../utils/_common';
+import {getUserRank} from '../utils';
+
+const STATISTIC_FILTERS = [
+  {title: `All time`, id: `statistic-all-time`, value: `all-time`, checked: true},
+  {title: `Today`, id: `statistic-today`, value: `today`},
+  {title: `Week`, id: `statistic-week`, value: `week`},
+  {title: `Month`, id: `statistic-month`, value: `month`},
+  {title: `Year`, id: `statistic-year`, value: `year`},
+];
 
 class Statistic extends Component {
   constructor(films) {
@@ -23,31 +32,34 @@ class Statistic extends Component {
       case `all-time`:
         this._filteredFilms = this._watchedFilms;
         break;
+
       case `today`:
         this._filteredFilms = this._watchedFilms.filter((film) =>
           moment(film.watchDate).format(`D MMMM YYYY`) === moment().format(`D MMMM YYYY`));
         break;
+
       case `week`:
         this._filteredFilms = this._watchedFilms
           .filter((film) => moment(film.watchDate) > moment()
           .subtract(1, `w`));
         break;
+
       case `month`:
         this._filteredFilms = this._watchedFilms
           .filter((film) => moment(film.watchDate) > moment()
           .subtract(1, `months`));
         break;
+
       case `year`:
         this._filteredFilms = this._watchedFilms
           .filter((film) => moment(film.watchDate) > moment()
           .subtract(1, `y`));
-        break;
     }
 
-    this._onUpdateDate();
+    this._onDateUpdate();
   }
 
-  _filterByGenre() {
+  _getGenresValues() {
     let filteredFilms = {};
 
     this._filteredFilms.forEach((film) => {
@@ -65,25 +77,28 @@ class Statistic extends Component {
   _generateCharts() {
     const BAR_HEIGHT = 50;
     const statisticWrapper = this._element.querySelector(`.statistic__chart`);
-    const [genreLabels, genreAmounts] = this._filterByGenre();
+    const [genreLabels, genreAmounts] = this._getGenresValues();
+
     statisticWrapper.height = BAR_HEIGHT * genreLabels.length;
 
-    this._chart = new Chart(statisticWrapper, this._getChart());
+    this._chart = new Chart(statisticWrapper, Statistic._getChart());
 
     this._chart.data = {
       labels: genreLabels,
-      datasets: [{
-        data: genreAmounts,
-        backgroundColor: `#ffe800`,
-        hoverBackgroundColor: `#ffe800`,
-        anchor: `start`
-      }]
+      datasets: [
+        {
+          data: genreAmounts,
+          backgroundColor: `#ffe800`,
+          hoverBackgroundColor: `#ffe800`,
+          anchor: `start`,
+        },
+      ],
     };
 
     this._chart.update();
   }
 
-  _getChart() {
+  static _getChart() {
     return {
       plugins: [ChartDataLabels],
       type: `horizontalBar`,
@@ -95,35 +110,35 @@ class Statistic extends Component {
             anchor: `start`,
             align: `start`,
             offset: 40,
-          }
+          },
         },
         scales: {
           yAxes: [{
             ticks: {
               fontColor: `#fff`,
               padding: 100,
-              fontSize: 20
+              fontSize: 20,
             },
             gridLines: {
               display: false,
-              drawBorder: false
+              drawBorder: false,
             },
-            barThickness: 24
+            barThickness: 24,
           }],
           xAxes: [{
             ticks: {
               display: false,
-              beginAtZero: true
+              beginAtZero: true,
             },
             gridLines: {
               display: false,
-              drawBorder: false
+              drawBorder: false,
             },
           }],
         },
         legend: {display: false},
-        tooltips: {enabled: false}
-      }
+        tooltips: {enabled: false},
+      },
     };
   }
 
@@ -133,11 +148,11 @@ class Statistic extends Component {
   }
 
   _getTopGenresTemplate() {
-    const [genreLabels, genreAmounts] = this._filterByGenre();
+    const [genreLabels, genreAmounts] = this._getGenresValues();
     const max = Math.max(...genreAmounts);
-    const maxID = genreAmounts.indexOf(max);
+    const maxId = genreAmounts.indexOf(max);
 
-    return `${genreLabels[maxID] ? genreLabels[maxID] : ``}`;
+    return `${genreLabels[maxId] ? genreLabels[maxId] : ``}`;
   }
 
   _getWatchedFilmsTemplate() {
@@ -149,7 +164,7 @@ class Statistic extends Component {
     );
   }
 
-  _onUpdateDate() {
+  _onDateUpdate() {
     this._chart.destroy();
     this._generateCharts();
     this._element.querySelector(`.statistic__item-text--watched`).innerHTML = this._getWatchedFilmsTemplate();
@@ -158,25 +173,13 @@ class Statistic extends Component {
   }
 
   get template() {
-    return (`<div>
-      <p class="statistic__rank">Your rank <span class="statistic__rank-label">Sci-Fighter</span></p>
+    return `<div>
+      <p class="statistic__rank">Your rank <span class="statistic__rank-label">${getUserRank(this._films)}</span></p>
       <form action="https://echo.htmlacademy.ru/" method="get" class="statistic__filters">
         <p class="statistic__filters-description">Show stats:</p>
-    
-        <input type="radio" class="statistic__filters-input visually-hidden" name="statistic-filter" id="statistic-all-time" value="all-time" checked>
-        <label for="statistic-all-time" class="statistic__filters-label">All time</label>
-    
-        <input type="radio" class="statistic__filters-input visually-hidden" name="statistic-filter" id="statistic-today" value="today">
-        <label for="statistic-today" class="statistic__filters-label">Today</label>
-    
-        <input type="radio" class="statistic__filters-input visually-hidden" name="statistic-filter" id="statistic-week" value="week">
-        <label for="statistic-week" class="statistic__filters-label">Week</label>
-    
-        <input type="radio" class="statistic__filters-input visually-hidden" name="statistic-filter" id="statistic-month" value="month">
-        <label for="statistic-month" class="statistic__filters-label">Month</label>
-    
-        <input type="radio" class="statistic__filters-input visually-hidden" name="statistic-filter" id="statistic-year" value="year">
-        <label for="statistic-year" class="statistic__filters-label">Year</label>
+        ${STATISTIC_FILTERS.map((filter) => `<input type="radio" class="statistic__filters-input visually-hidden" 
+        name="statistic-filter" id="${filter.id}" value="${filter.value}" ${filter.checked ? `checked` : ``}>
+        <label for="${filter.id}" class="statistic__filters-label">${filter.title}</label>`).join(``)}
       </form>
     
       <ul class="statistic__text-list">
@@ -198,7 +201,7 @@ class Statistic extends Component {
         <canvas class="statistic__chart" width="1000"></canvas>
       </div>
     
-    </div>`);
+    </div>`;
   }
 
   addEventListeners() {
