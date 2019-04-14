@@ -7,14 +7,14 @@ class Search extends Component {
     this._onSearchChange = this._onSearchChange.bind(this);
   }
 
+  set onChange(fn) {
+    this._onChange = fn;
+  }
+
   _onSearchChange(event) {
     if (typeof this._onChange === `function`) {
       this._onChange(event.target.value);
     }
-  }
-
-  set onChange(fn) {
-    this._onChange = fn;
   }
 
   get template() {

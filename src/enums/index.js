@@ -13,7 +13,7 @@ export const Time = {
   SECOND: 1000,
 };
 
-export const Keycode = {
+export const KeyCode = {
   ENTER: 13,
   ESC: 27,
 };
@@ -36,4 +36,3 @@ export const FilterType = {
   FAVORITES: `favorites`,
   ALL: `all`,
 };
-

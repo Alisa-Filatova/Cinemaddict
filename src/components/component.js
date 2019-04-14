@@ -1,4 +1,4 @@
-import {createElement} from '../utils/index';
+import {createElement} from '../utils/_common';
 
 class Component {
   constructor() {

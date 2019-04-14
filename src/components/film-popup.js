@@ -1,11 +1,10 @@
 import moment from 'moment';
 import 'moment-duration-format';
 import Component from './component';
-import {EMOJIES, MAX_RATE_NUMBER, HIDDEN_CLASS} from '../constants/index';
-import {Keycode} from '../enums/index';
+import {EMOJIS, MAX_RATE_NUMBER, HIDDEN_CLASS} from '../constants';
+import {KeyCode} from '../enums';
 
 class FilmPopup extends Component {
-
   constructor(data) {
     super();
     this._id = data.id;
@@ -28,15 +27,17 @@ class FilmPopup extends Component {
     this._isWatched = data.isWatched;
     this._isFavorite = data.isFavorite;
 
+    this._onClose = null;
+    this._onEsc = null;
     this._onAddComment = null;
     this._onDeleteComment = null;
     this._onSetRating = null;
-    this._onClose = null;
     this._onAddToWatchList = null;
     this._onMarkAsWatched = null;
     this._onAddToFavorite = null;
 
     this._onCloseClick = this._onCloseClick.bind(this);
+    this._onEscPress = this._onEscPress.bind(this);
     this._onAddNewComment = this._onAddNewComment.bind(this);
     this._onDeleteLastComment = this._onDeleteLastComment.bind(this);
     this._onEmojiChange = this._onEmojiChange.bind(this);
@@ -48,6 +49,10 @@ class FilmPopup extends Component {
 
   set onClose(fn) {
     this._onClose = fn;
+  }
+
+  set onEsc(fn) {
+    this._onEsc = fn;
   }
 
   set onAddComment(fn) {
@@ -82,12 +87,19 @@ class FilmPopup extends Component {
     }
   }
 
+  _onEscPress(event) {
+    if (event.keyCode === KeyCode.ESC && typeof this._onEsc === `function`) {
+      this._onEsc();
+    }
+  }
+
   _onAddNewComment(event) {
-    if (event.ctrlKey && event.keyCode === Keycode.ENTER
+    if (event.ctrlKey && event.keyCode === KeyCode.ENTER
       && document.querySelector(`.film-details__comment-input`).value.trim() !== ``
     ) {
       const formData = new FormData(this._element.querySelector(`form`));
       const newData = this._processForm(formData);
+
       this._element.querySelector(`.film-details__watched-reset`).classList.remove(HIDDEN_CLASS);
       this._element.querySelector(`.film-details__watched-status`).textContent = `Comment added`;
 
@@ -149,9 +161,9 @@ class FilmPopup extends Component {
     }
   }
 
-  static _onAddNewComment(comments) {
+  static _renderComments(comments) {
     return comments.map((item) => `<li class="film-details__comment">
-      <span class="film-details__comment-emoji">${EMOJIES[item.emotion]}</span>
+      <span class="film-details__comment-emoji">${EMOJIS[item.emotion]}</span>
       <div>
         <p class="film-details__comment-text">${item.comment}</p>
         <p class="film-details__comment-info">
@@ -164,18 +176,18 @@ class FilmPopup extends Component {
 
   static _createMapper(target) {
     return {
-      "comment-emoji": (value) => {
+      'comment-emoji': (value) => {
         target.comments.emotion = value;
       },
-      "comment": (value) => (target.comments.comment = value),
-      "score": (value) => (target.score = value),
+      'comment': (value) => (target.comments.comment = value),
+      'score': (value) => (target.score = value),
     };
   }
 
   _processForm(formData) {
     const entry = {
       comments: {
-        emotion: EMOJIES[`neutral-face`],
+        emotion: EMOJIS[`neutral-face`],
         comment: ``,
         author: `New user`,
         date: Date.now(),
@@ -188,28 +200,8 @@ class FilmPopup extends Component {
     Array.from(formData.entries())
       .forEach(([property, value]) =>
         filmEditMapper[property] && filmEditMapper[property](value));
+
     return entry;
-  }
-
-  update(data) {
-    this._isInWatchlist = data.isInWatchlist;
-    this._isWatched = data.isWatched;
-    this._isFavorite = data.isFavorite;
-    this._comments = data.comments;
-    this._score = data.score;
-    this._element.querySelector(`.film-details__comments-list`).innerHTML = FilmPopup._onAddNewComment(this._comments);
-    this._element.querySelector(`.film-details__comment-input`).value = ``;
-    this._element.querySelector(`.film-details__comments-count`).textContent = this._comments.length;
-    this._element.querySelector(`.film-details__user-rating-count`).textContent = this._score;
-  }
-
-  shake() {
-    const ANIMATION_TIMEOUT = 600;
-    this._element.querySelector(`.film-details__inner`).classList.add(`shake`);
-
-    setTimeout(() => {
-      this._element.querySelector(`.film-details__inner`).classList.remove(`shake`);
-    }, ANIMATION_TIMEOUT);
   }
 
   disableComments() {
@@ -224,16 +216,21 @@ class FilmPopup extends Component {
     this._element.querySelector(`.film-details__watched-status`).textContent = `Comment deleted`;
   }
 
+  unblockComments() {
+    this._element.querySelectorAll(`.film-details__add-emoji`).disabled = false;
+    this._element.querySelectorAll(`.film-details__comment-input`).disabled = false;
+  }
+
+  showCommentsError() {
+    this._element.querySelector(`.film-details__comment-input`).style.border = `solid 3px red`;
+    this.unblockComments();
+  }
+
   disableRating() {
     this._element.querySelectorAll(`.film-details__user-rating-input`).forEach((item) => {
       item.disabled = true;
       item.style.opacity = `0.5`;
     });
-  }
-
-  unblockComments() {
-    this._element.querySelectorAll(`.film-details__add-emoji`).disabled = false;
-    this._element.querySelectorAll(`.film-details__comment-input`).disabled = false;
   }
 
   unblockRating() {
@@ -243,14 +240,43 @@ class FilmPopup extends Component {
     });
   }
 
-  showCommentsError() {
-    this._element.querySelector(`.film-details__comment-input`).style.border = `solid 3px #ff0000`;
-    this.unblockComments();
+  showRatingError() {
+    this._element.querySelector(`.film-details__user-rating-input:checked + label`).style.backgroundColor = `red`;
+    this.unblockRating();
   }
 
-  showRatingError() {
-    this._element.querySelector(`.film-details__user-rating-input:checked + label`).style.backgroundColor = `#ff0000`;
-    this.unblockRating();
+  /**
+   * Выполняет анимацию "тряска" формы ошибки
+   */
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    this._element.querySelector(`.film-details__inner`).classList.add(`shake`);
+
+    setTimeout(() => {
+      this._element.querySelector(`.film-details__inner`).classList.remove(`shake`);
+    }, ANIMATION_TIMEOUT);
+  }
+
+  update(data) {
+    this._isInWatchlist = data.isInWatchlist;
+    this._isWatched = data.isWatched;
+    this._isFavorite = data.isFavorite;
+    this._comments = data.comments;
+    this._score = data.score;
+    this._element.querySelector(`.film-details__comments-list`).innerHTML = FilmPopup._renderComments(this._comments);
+    this._element.querySelector(`.film-details__comment-input`).value = ``;
+    this._element.querySelector(`.film-details__comments-count`).textContent = this._comments.length;
+    this._element.querySelector(`.film-details__user-rating-count`).textContent = this._score;
+  }
+
+  partialUpdate(newData) {
+    this.render();
+    const parentElement = this._element.parentNode;
+    const prevElement = this._element;
+
+    this.update(newData);
+    parentElement.replaceChild(this.render(), prevElement);
+    this.destroy();
   }
 
   get template() {
@@ -266,7 +292,7 @@ class FilmPopup extends Component {
     ];
 
     return (
-      `<section class="film-details">
+      `<section class="film-details" id="${this._id}">
         <form class="film-details__inner" action="" method="get">
           <div class="film-details__close">
             <button class="film-details__close-btn" type="button">close</button>
@@ -286,7 +312,7 @@ class FilmPopup extends Component {
                 </div>
       
                 <div class="film-details__rating">
-                  <p class="film-details__total-rating">${this._rating}</p>
+                  <p class="film-details__total-rating">${this._rating.toFixed(1)}</p>
                   <p class="film-details__user-rating">Your rate <span class="film-details__user-rating-count">${this._score}</span></p>
                 </div>
               </div>
@@ -296,7 +322,7 @@ class FilmPopup extends Component {
                 <td class="film-details__cell">${item.value}</td>
                 </tr>`).join(``)}
               </table>
-              <p class="film-details__film-description">${this._description}</p>
+              <p class="film-details__film-description">${this._description.length > 1 ? this._description : ``}</p>
             </div>
           </div>
       
@@ -314,17 +340,17 @@ class FilmPopup extends Component {
       
             <ul class="film-details__comments-list">
               <ul class="film-details__comments-list">
-                ${FilmPopup._onAddNewComment(this._comments)}
+                ${FilmPopup._renderComments(this._comments)}
               </ul>
             </ul>
       
             <div class="film-details__new-comment">
               <div>
-                <label for="add-emoji" class="film-details__add-emoji-label">${EMOJIES[`neutral-face`]}</label>
+                <label for="add-emoji" class="film-details__add-emoji-label">${EMOJIS[`neutral-face`]}</label>
                 <input type="checkbox" class="film-details__add-emoji visually-hidden" id="add-emoji">
       
                 <div class="film-details__emoji-list">
-                  ${Object.keys(EMOJIES).map((item, idx) => `<input 
+                  ${Object.keys(EMOJIS).map((item, idx) => `<input 
                     class="film-details__emoji-item visually-hidden" 
                     name="comment-emoji" 
                     type="radio" 
@@ -333,7 +359,7 @@ class FilmPopup extends Component {
                     value="${item}">
                     <label 
                       class="film-details__emoji-label" 
-                      for="emoji-${item}">${EMOJIES[item]}</label>`).join(``)}
+                      for="emoji-${item}">${EMOJIS[item]}</label>`).join(``)}
                 </div>
               </div>
               <label class="film-details__comment-label">
@@ -344,13 +370,13 @@ class FilmPopup extends Component {
       
           <section class="film-details__user-rating-wrap">
             <div class="film-details__user-rating-controls">
-              <span class="film-details__watched-status film-details__watched-status--active">${this._isWatched ? `Already watched` : `Will watch`}</span>
-                <button class="film-details__watched-reset visually-hidden" type="button">undo</button>
-              </div>
+              <span class="film-details__watched-status film-details__watched-status--active"></span>
+              <button class="film-details__watched-reset visually-hidden" type="button">undo</button>
+            </div>
         
               <div class="film-details__user-score">
                 <div class="film-details__user-rating-poster">
-                  <img src="${this._poster}" alt="film-poster" class="film-details__user-rating-img">
+                  <img src="${this._poster}" alt="${this._title}" class="film-details__user-rating-img">
               </div>
       
               <section class="film-details__user-rating-inner">
@@ -392,6 +418,7 @@ class FilmPopup extends Component {
       .addEventListener(`change`, this._onMarkAsWatchedClick);
     this._element.querySelector(`#favorite`)
       .addEventListener(`change`, this._onAddToFavoriteClick);
+    document.addEventListener(`keydown`, this._onEscPress);
   }
 
   removeEventListeners() {
@@ -411,6 +438,7 @@ class FilmPopup extends Component {
       .removeEventListener(`change`, this._onMarkAsWatchedClick);
     this._element.querySelector(`#favorite`)
       .removeEventListener(`change`, this._onAddToFavoriteClick);
+    document.removeEventListener(`keydown`, this._onEscPress);
   }
 }
 

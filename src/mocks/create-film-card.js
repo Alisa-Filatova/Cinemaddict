@@ -4,9 +4,9 @@ import {
   generateRandomNumber,
   getRandomArrayElement,
   getRandomInteger
-} from '../utils/index';
-import {Time} from '../enums/index';
-import {EMOJIES, MAX_RATE_NUMBER} from '../constants/index';
+} from '../utils/_common';
+import {Time} from '../enums';
+import {EMOJIS, MAX_RATE_NUMBER} from '../constants';
 
 const BOOLEANS = [false, true];
 const MAX_SENTENCES_FOR_FILM_DESCRIPTION = 2;
@@ -47,25 +47,25 @@ const COUNTRIES = [`USA`, `Canada`, `Russia`, `France`, `England`];
 
 const COMMENTS = [
   {
-    emotion: EMOJIES.sleeping,
+    emotion: EMOJIS.sleeping,
     comment: `So boring...`,
     author: getRandomArrayElement(ACTORS),
     date: moment(),
   },
   {
-    emotion: EMOJIES.grinning,
+    emotion: EMOJIS.grinning,
     comment: `Like it...`,
     author: getRandomArrayElement(ACTORS),
     date: moment(),
   },
   {
-    emotion: EMOJIES.grinning,
+    emotion: EMOJIS.grinning,
     comment: `So so...`,
     author: getRandomArrayElement(ACTORS),
     date: moment(),
   },
   {
-    emotion: EMOJIES.sleeping,
+    emotion: EMOJIS.sleeping,
     comment: `I'm slept`,
     author: getRandomArrayElement(ACTORS),
     date: moment(),
@@ -79,30 +79,30 @@ const DESCRIPTION = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cr
   eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis 
   suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`;
 
+export const getFilmsData = (amount) =>
+  Array.from({length: amount}).map(() => createFilmCard());
+
 export const createFilmCard = () => ({
   title: getRandomArrayElement(TITLES),
   titleOriginal: getRandomArrayElement(TITLES),
   director: getRandomArrayElement(DIRECTORS),
   poster: `./images/posters/${getRandomArrayElement(POSTERS)}.jpg`,
-  description:
-    DESCRIPTION.split(`. `)
+  description: DESCRIPTION.split(`. `)
       .sort(compareRandom)
       .slice(0, generateRandomNumber(MAX_SENTENCES_FOR_FILM_DESCRIPTION))
       .join(`. `),
-  writers:
-    WRITERS
+  writers: WRITERS
       .sort(compareRandom)
       .slice(0, generateRandomNumber(WRITERS.length))
       .join(`, `),
-  actors:
-    ACTORS
+  actors: ACTORS
       .sort(compareRandom)
       .slice(0, generateRandomNumber(ACTORS.length))
       .join(`, `),
   rating: getRandomInteger(MAX_RATE_NUMBER).toFixed(1),
   userRating: Date.now() + generateRandomNumber(1, -Time.MONTH) * Time.DAY * Time.HOUR * Time.MINUTE * Time.SECOND,
   score: generateRandomNumber(MAX_RATE_NUMBER),
-  releaseDate: Date.now() + getRandomInteger(Time.YEAR, (-Time.YEAR) * 15) * getRandomInteger(Time.DAY),
+  releaseDate: Date.now() + getRandomInteger(Time.YEAR, (-Time.YEAR) * getRandomInteger(Time.DAY)),
   country: getRandomArrayElement(COUNTRIES),
   duration: getRandomInteger(Time.HOUR * 2.5, Time.HOUR),
   genres: GENRES.sort(compareRandom).slice(0, generateRandomNumber(GENRES.length)),

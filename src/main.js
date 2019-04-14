@@ -3,10 +3,11 @@ import FilmPopup from './components/film-popup';
 import Filter from './components/filter';
 import Statistic from './components/statistics';
 import Search from './components/search';
-import {Keycode, UserRank, FilmState, FilterType} from './enums';
-import API from './api.js';
-import Provider from './provider.js';
-import Store from './store.js';
+import API from './api';
+import Provider from './provider';
+import Store from './store';
+import {getUserRank, calcCountFilmsWithStatus} from './utils';
+import {FilmState, FilterType} from './enums';
 import {
   AUTHORIZATION,
   END_POINT,
@@ -14,11 +15,40 @@ import {
   MAIN_BLOCK_MAX_CARDS,
   EXTRA_BLOCK_MAX_CARDS,
   HIDDEN_CLASS,
-  FILTERS_DATA,
 } from './constants';
 
+const FILTERS_DATA = [
+  {
+    title: `All movies`,
+    type: FilterType.ALL,
+    count: null,
+    isActive: true,
+  },
+  {
+    title: `Watchlist`,
+    type: FilterType.WATCHLIST,
+    count: null,
+    isActive: false,
+  },
+  {
+    title: `History`,
+    type: FilterType.HISTORY,
+    count: null,
+    isActive: false,
+  },
+  {
+    title: `Favorites`,
+    type: FilterType.FAVORITES,
+    count: null,
+    isActive: false,
+  },
+];
+
 const ACTIVE_MENU_ITEM_CLASS = `main-navigation__item--active`;
-const mainNavigation = document.querySelector(`.main-navigation`);
+const LOADING_MESSAGE = `🎬 Loading movies...`;
+const ERROR_MESSAGE = `Something went wrong while loading movies. Check your connection or try again later 😓`;
+
+const mainNavContainer = document.querySelector(`.main-navigation`);
 const filmsContainer = document.querySelector(`.films`);
 const mainFilmsContainer = filmsContainer.querySelector(`.films-list .films-list__container`);
 const topRatedFilmsContainer = filmsContainer.querySelector(`.films-list--top-rated .films-list__container`);
@@ -28,80 +58,86 @@ const statisticButton = document.querySelector(`.main-navigation__item--addition
 const placeholderContainer = document.querySelector(`.films-list__title`);
 const footerStatisticContainer = document.querySelector(`.footer__statistics`);
 const showMoreButton = document.querySelector(`.films-list__show-more`);
-const profileRatingContainer = document.querySelector(`.profile__rating`);
+const userRankContainer = document.querySelector(`.profile__rating`);
 const headerLogo = document.querySelector(`.header__logo`);
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 const store = new Store({key: FILMS_STORE_KEY, storage: localStorage});
 const provider = new Provider({api, store, generateId: () => String(Date.now())});
 
-window.addEventListener(`offline`, () => document.title = `${document.title}[OFFLINE]`);
+window.addEventListener(`offline`, () => {
+  document.title = `${document.title}[OFFLINE]`;
+});
+
 window.addEventListener(`online`, () => {
   document.title = document.title.split(`[OFFLINE]`)[0];
   provider.syncFilms();
 });
 
-// Сортировка дополнительных блоков
-
-const compareRating = (a, b) => b.rating - a.rating;
-const compareCommentsCount = (a, b) => b.comments.length - a.comments.length;
-
-// Отрисовка списка фильмов
-
-const renderFilmsList = (films, container, showControls) => {
+/**
+ * Отрисовка списка фильмов
+ *
+ * @param {Array} films
+ * @param {Element} container
+ * @param {Boolean} showControls
+ */
+const renderFilmsList = (films, container, showControls = true) => {
   films.forEach((data) => {
     const filmCard = new FilmCard(data, showControls);
     const filmPopup = new FilmPopup(data);
 
     container.appendChild(filmCard.render());
 
-    // Открытие попапа с деталями фильма
-
     filmCard.onCommentsClick = () => {
+      if (document.body.querySelector(`.film-details`)) {
+        filmPopup.destroy();
+      }
+
+      filmPopup.render();
       document.body.appendChild(filmPopup.render());
     };
 
-    // Добавление фильма в watchlist через карточку
-
     filmCard.onAddToWatchList = () => {
-      filmCard._isInWatchlist = !filmCard._isInWatchlist;
-      data.isInWatchlist = filmCard._isInWatchlist;
-      filmPopup._isInWatchlist = data.isInWatchlist;
+      data.isInWatchlist = !data.isInWatchlist;
 
       provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => {
           filmCard.update(newData);
-        });
+          filmPopup.partialUpdate(newData);
+          updateFilmsFilterCount(newData.isInWatchlist, FilterType.WATCHLIST);
+        })
+        // eslint-disable-next-line no-console
+        .catch(() => console.error(`some error with watchlist`));
     };
-
-    // Добавление фильма в watched через карточку
 
     filmCard.onMarkAsWatched = () => {
-      filmCard._isWatched = !filmCard._isWatched;
-      data.isWatched = filmCard._isWatched;
-      filmPopup._isWatched = data.isWatched;
+      data.isWatched = !data.isWatched;
 
       provider.updateFilm({id: data.id, data: data.toRAW()})
-        .then((newData) => filmCard.update(newData));
+        .then((newData) => {
+          filmCard.update(newData);
+          filmPopup.partialUpdate(newData);
+          updateFilmsFilterCount(newData.isWatched, FilterType.HISTORY);
+        })
+        // eslint-disable-next-line no-console
+        .catch(() => console.error(`some error with watched`));
     };
-
-    // Добавление фильма в favorite через карточку
 
     filmCard.onAddToFavorite = () => {
-      filmCard._isFavorite = !filmCard._isFavorite;
-      data.isFavorite = filmCard._isFavorite;
-      filmPopup._isFavorite = data.isFavorite;
+      data.isFavorite = !data.isFavorite;
 
       provider.updateFilm({id: data.id, data: data.toRAW()})
-        .then((newData) => filmCard.update(newData));
+        .then((newData) => {
+          filmCard.update(newData);
+          filmPopup.partialUpdate(newData);
+          updateFilmsFilterCount(newData.isFavorite, FilterType.FAVORITES);
+        })
+        // eslint-disable-next-line no-console
+        .catch(() => console.error(`some error with favorite`));
     };
-
-    // Добавление комментария через popup
 
     filmPopup.onAddComment = (newData) => {
       data.comments.push(newData.comments);
-      filmPopup._comments = data.comments;
-      filmCard._comments = data.comments;
       filmPopup.disableComments();
 
       provider.updateFilm({id: data.id, data: data.toRAW()})
@@ -118,8 +154,6 @@ const renderFilmsList = (films, container, showControls) => {
 
     filmPopup.onDeleteComment = () => {
       data.comments.pop();
-      filmPopup._comments = data.comments;
-      filmCard._comments = data.comments;
       filmPopup.deleteComment();
 
       provider.updateFilm({id: data.id, data: data.toRAW()})
@@ -127,12 +161,8 @@ const renderFilmsList = (films, container, showControls) => {
           filmCard.update(newComment);
           filmPopup.update(newComment);
         })
-        .catch(() => {
-          filmPopup.shake();
-        });
+        .catch(() => filmPopup.shake());
     };
-
-    // Установка оценки фильма пользователем через popup
 
     filmPopup.onSetRating = (newData) => {
       data.score = newData.score;
@@ -150,109 +180,131 @@ const renderFilmsList = (films, container, showControls) => {
         });
     };
 
-    // Добавление фильма в watchlist через popup
-
     filmPopup.onAddToWatchList = () => {
-      filmPopup._isInWatchlist = !filmPopup._isInWatchlist;
-      data.isInWatchlist = filmPopup._isInWatchlist;
-      filmCard._isInWatchlist = data.isInWatchlist;
+      data.isInWatchlist = !data.isInWatchlist;
 
       provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => {
           filmPopup.update(newData);
           filmCard.update(newData);
-        });
+          updateFilmsFilterCount(newData.isInWatchlist, FilterType.WATCHLIST);
+        })
+        .catch(() => filmPopup.shake());
     };
-
-    // Добавление фильма в watched через popup
 
     filmPopup.onMarkAsWatched = () => {
-      filmPopup._isWatched = !filmPopup._isWatched;
-      data.isWatched = filmPopup._isWatched;
-      filmCard._isWatched = data.isWatched;
+      data.isWatched = !data.isWatched;
 
       provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => {
           filmPopup.update(newData);
           filmCard.update(newData);
-        });
+          updateFilmsFilterCount(newData.isWatched, FilterType.HISTORY);
+        })
+        .catch(() => filmPopup.shake());
     };
-
-    // Добавление фильма в favorite через popup
 
     filmPopup.onAddToFavorite = () => {
-      filmPopup._isFavorite = !filmPopup._isFavorite;
-      data.isFavorite = filmPopup._isFavorite;
-      filmCard._isFavorite = data.isFavorite;
+      data.isFavorite = !data.isFavorite;
 
       provider.updateFilm({id: data.id, data: data.toRAW()})
         .then((newData) => {
           filmPopup.update(newData);
           filmCard.update(newData);
-        });
+          updateFilmsFilterCount(newData.isFavorite, FilterType.FAVORITES);
+        })
+        .catch(() => filmPopup.shake());
     };
 
-    // Закрытие popup
-
-    filmPopup.onClose = () => {
-      filmCard.update(data);
-      filmPopup.destroy();
-    };
-
-    document.addEventListener(`keydown`, (event) => {
-      if (event.keyCode === Keycode.ESC) {
-        filmCard.update(data);
-        filmPopup.destroy();
-      }
-    });
+    filmPopup.onClose = () => filmPopup.destroy();
+    filmPopup.onEsc = () => filmPopup.destroy();
   });
 };
 
-// Подсчет кол-ва фильмов по статусу
+/**
+ * Обновление кол-ва отфильтрованных фильмов в верстке
+ *
+ * @param {Boolean} filter
+ * @param {String} filterId
+ */
+const updateFilmsFilterCount = (filter, filterId) => {
+  const filterComponent = document.querySelector(`#${filterId} .main-navigation__item-count`);
 
-const countFilmsWithStatus = (films, status) => films.filter((film) => film[status]).length;
+  if (filter) {
+    filterComponent.textContent = `${+filterComponent.textContent + 1}`;
+  } else {
+    filterComponent.textContent = `${+filterComponent.textContent - 1}`;
+  }
+};
 
-// Сортировка и отрисовка фильмов по типу
-
-const filterMainFilmsByType = (films, type, endAmount, startAmount = 0) =>
-  renderFilmsList(films
+/**
+ * Сортировка и отрисовка фильмов по типу
+ *
+ * @param {Array} films
+ * @param {String} type
+ * @param {Number} endAmount
+ * @param {Number} startAmount
+ */
+const filterFilmsByType = (films, type, endAmount, startAmount = 0) => {
+  const filmsArray = films
     .filter((film) => film[type])
-    .slice(startAmount, endAmount), mainFilmsContainer
-  );
+    .slice(startAmount, endAmount);
 
-// Переключение отображения кнопки ShowMore
+  renderFilmsList(filmsArray, mainFilmsContainer);
+};
 
+/**
+ * Переключение отображения кнопки ShowMore
+ *
+ * @param {Array} filmsData
+ * @param {NodeListOf<Element>} currentTypeFilms
+ * @param {String} state
+ */
 const toggleShowMoreButton = (filmsData, currentTypeFilms, state) => {
-  if (countFilmsWithStatus(filmsData, state) === currentTypeFilms.length || currentTypeFilms.length === 0) {
+  if (calcCountFilmsWithStatus(filmsData, state) === currentTypeFilms.length
+    || currentTypeFilms.length === 0
+  ) {
     showMoreButton.classList.add(HIDDEN_CLASS);
-  } else if (countFilmsWithStatus(filmsData, state) > currentTypeFilms.length) {
+  } else if (calcCountFilmsWithStatus(filmsData, state) > currentTypeFilms.length) {
     showMoreButton.classList.remove(HIDDEN_CLASS);
   }
 };
 
-// Отрисовка фильтров
-
+/**
+ * Отрисовка фильтров
+ *
+ * @param {Element} container
+ * @param {Array} filters
+ * @param {Array} films
+ */
 const renderFilters = (container, filters, films) => {
   filters.reverse().forEach((filterItem) => {
     const filterData = Object.assign(filterItem);
 
-    if (filterData.type === FilterType.WATCHLIST) {
-      filterData.count = countFilmsWithStatus(films, FilmState.IN_WATCHLIST);
-    } else if (filterData.type === FilterType.HISTORY) {
-      filterData.count = countFilmsWithStatus(films, FilmState.WATCHED);
-    } else if (filterData.type === FilterType.FAVORITES) {
-      filterData.count = countFilmsWithStatus(films, FilmState.FAVORITE);
-    }
+    /**
+     * Вычисление кол-ва фильмов по типу фильтра
+     *
+     * @param {Object} filter
+     * @param {Array} filmsData
+     */
+    const calcTypeOfFilmsCount = (filter, filmsData) => {
+      if (filter.type === FilterType.WATCHLIST) {
+        filter.count = calcCountFilmsWithStatus(filmsData, FilmState.IN_WATCHLIST);
+      } else if (filter.type === FilterType.HISTORY) {
+        filter.count = calcCountFilmsWithStatus(filmsData, FilmState.WATCHED);
+      } else if (filter.type === FilterType.FAVORITES) {
+        filter.count = calcCountFilmsWithStatus(filmsData, FilmState.FAVORITE);
+      }
+    };
+
+    calcTypeOfFilmsCount(filterData, films);
 
     const filterComponent = new Filter(filterData);
-
     container.insertAdjacentElement(`afterbegin`, filterComponent.render());
-
-    // Сортировка фильмов по фильтру
 
     filterComponent.onFilter = () => {
       const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
-      const activeItem = mainNavigation.querySelector(`.${ACTIVE_MENU_ITEM_CLASS}`);
+      const activeMenuItem = mainNavContainer.querySelector(`.${ACTIVE_MENU_ITEM_CLASS}`);
 
       if (filmsContainer.classList.contains(HIDDEN_CLASS)) {
         filmsContainer.classList.remove(HIDDEN_CLASS);
@@ -262,24 +314,37 @@ const renderFilters = (container, filters, films) => {
 
       filmCards.forEach((card) => card.remove());
       filterData.isActive = !filterData.isActive;
-      activeItem.classList.remove(ACTIVE_MENU_ITEM_CLASS);
+      activeMenuItem.classList.remove(ACTIVE_MENU_ITEM_CLASS);
       filterComponent.element.classList.add(ACTIVE_MENU_ITEM_CLASS);
-      filterComponent.update(filterData);
 
-      const checkCurrentFilter = (type) => {
-        filterMainFilmsByType(films, type, MAIN_BLOCK_MAX_CARDS);
+      // Обновляем статус пользователя в хедере
+      userRankContainer.textContent = getUserRank(films);
+
+      /**
+       * Отрисовка кнопки showMore в зависимости от кол-ва карточек в фильтре
+       *
+       * @param {String} filterType
+       */
+      const checkShowMoreButtonView = (filterType) => {
+        filterFilmsByType(films, filterType, MAIN_BLOCK_MAX_CARDS);
         const filterTypeFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
-        toggleShowMoreButton(films, filterTypeFilmCards, type);
+        toggleShowMoreButton(films, filterTypeFilmCards, filterType);
       };
 
       switch (filterItem.type) {
-        case FilterType.WATCHLIST: checkCurrentFilter(FilmState.IN_WATCHLIST);
+        case FilterType.WATCHLIST:
+          checkShowMoreButtonView(FilmState.IN_WATCHLIST);
           break;
-        case FilterType.HISTORY: checkCurrentFilter(FilmState.WATCHED);
+
+        case FilterType.HISTORY:
+          checkShowMoreButtonView(FilmState.WATCHED);
           break;
-        case FilterType.FAVORITES: checkCurrentFilter(FilmState.FAVORITE);
+
+        case FilterType.FAVORITES:
+          checkShowMoreButtonView(FilmState.FAVORITE);
           break;
-        default:
+
+        default: {
           renderFilmsList(films.slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer);
           const allFilmsCards = mainFilmsContainer.querySelectorAll(`.film-card`);
 
@@ -288,18 +353,22 @@ const renderFilters = (container, filters, films) => {
           } else {
             showMoreButton.classList.remove(HIDDEN_CLASS);
           }
+        }
       }
     };
   });
 };
 
-// Отрисовка поиска фильмов
-
+/**
+ * Отрисовка поиска фильмов
+ *
+ * @param {Array} films
+ */
 const renderSearch = (films) => {
-  const searchComponent = new Search();
-  headerLogo.insertAdjacentElement(`afterend`, searchComponent.render());
+  const searchInput = new Search();
+  headerLogo.insertAdjacentElement(`afterend`, searchInput.render());
 
-  searchComponent.onChange = (value) => {
+  searchInput.onChange = (value) => {
     const searchedItems = films.filter((item) => item.title.toLowerCase().includes(value));
     mainFilmsContainer.innerHTML = ``;
 
@@ -325,24 +394,85 @@ const renderSearch = (films) => {
   };
 };
 
-// Рассчет звания пользователя
+/**
+ * Отрисовка статистики
+ *
+ * @param {Array} films
+ */
+const renderStatistic = (films) => {
+  const statisticComponent = new Statistic(films);
+  statisticComponent.render();
 
-const getProfileRating = (films) => {
-  const count = countFilmsWithStatus(films, FilmState.WATCHED);
+  if (statisticButton.classList.contains(ACTIVE_MENU_ITEM_CLASS)) {
+    statisticButton.classList.remove(ACTIVE_MENU_ITEM_CLASS);
+    statisticContainer.innerHTML = ``;
+    filmsContainer.classList.remove(HIDDEN_CLASS);
+    statisticComponent.destroy();
+  } else if (!statisticButton.classList.contains(ACTIVE_MENU_ITEM_CLASS)) {
+    statisticButton.classList.add(ACTIVE_MENU_ITEM_CLASS);
+    statisticContainer.innerHTML = ``;
+    filmsContainer.classList.add(HIDDEN_CLASS);
+    statisticContainer.appendChild(statisticComponent.element);
+  }
+  // Обновляем статус пользователя в хедере
+  userRankContainer.textContent = getUserRank(films);
+};
 
-  if (count <= 10 && count !== 0) {
-    return UserRank.NOVICE;
-  } else if (count >= 11 && count < 20) {
-    return UserRank.FAN;
-  } else if (count >= 20) {
-    return UserRank.MOVIE_BUFF;
-  } else {
-    return null;
+/**
+ * Показать больше карточкек
+ *
+ * @param {Array} films
+ */
+const showMore = (films) => {
+  const visibleFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+  const activeMenuItem = mainNavContainer.querySelector(`.${ACTIVE_MENU_ITEM_CLASS}`);
+
+  /**
+   * Отрисовка следующего ряда карточек по типу фильтра
+   *
+   * @param {String} type
+   */
+  const renderSecondRowOfFilms = (type) => {
+    filterFilmsByType(films, type, visibleFilmCards.length + MAIN_BLOCK_MAX_CARDS, visibleFilmCards.length);
+    const allInTypeFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+
+    if (allInTypeFilmCards.length === calcCountFilmsWithStatus(films, type)) {
+      showMoreButton.classList.add(HIDDEN_CLASS);
+    }
+  };
+
+  switch (activeMenuItem.id) {
+    case FilterType.WATCHLIST:
+      renderSecondRowOfFilms(FilmState.IN_WATCHLIST);
+      break;
+
+    case FilterType.HISTORY:
+      renderSecondRowOfFilms(FilmState.WATCHED);
+      break;
+
+    case FilterType.FAVORITES:
+      renderSecondRowOfFilms(FilmState.FAVORITE);
+      break;
+
+    default: {
+      const filmsArray = films.slice(visibleFilmCards.length, visibleFilmCards.length + MAIN_BLOCK_MAX_CARDS);
+
+      renderFilmsList(filmsArray, mainFilmsContainer);
+
+      const allFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
+
+      if (allFilmCards.length === films.length) {
+        showMoreButton.classList.add(HIDDEN_CLASS);
+      }
+    }
   }
 };
 
-// Плейсхолдер для загрузки
-
+/**
+ * Плейсхолдер для загрузки
+ *
+ * @param {String} message
+ */
 const showPlaceholder = (message) => {
   placeholderContainer.textContent = message;
   placeholderContainer.classList.remove(HIDDEN_CLASS);
@@ -352,13 +482,16 @@ const removePlaceholder = () => {
   placeholderContainer.classList.add(HIDDEN_CLASS);
 };
 
-showPlaceholder(`🎬 Loading movies...`);
+const compareCommentsCount = (min, max) => max.comments.length - min.comments.length;
+const compareRating = (min, max) => max.rating - min.rating;
 
-// Загрузка данных с сервера
+showPlaceholder(LOADING_MESSAGE);
 
 provider.getFilms()
   .then((films) => {
     removePlaceholder();
+    renderFilters(mainNavContainer, FILTERS_DATA, films);
+    renderSearch(films);
     renderFilmsList(films
       .slice(0, MAIN_BLOCK_MAX_CARDS), mainFilmsContainer);
     renderFilmsList(films
@@ -367,64 +500,17 @@ provider.getFilms()
     renderFilmsList(films
       .sort(compareCommentsCount)
       .slice(0, EXTRA_BLOCK_MAX_CARDS), mostCommentedFilmsContainer, false);
-    renderFilters(mainNavigation, FILTERS_DATA, films);
-    renderSearch(films);
 
     // Отрисовка статистики
-
-    statisticButton.addEventListener(`click`, () => {
-      const statisticComponent = new Statistic(films);
-      statisticComponent.render();
-
-      if (statisticButton.classList.contains(ACTIVE_MENU_ITEM_CLASS)) {
-        statisticButton.classList.remove(ACTIVE_MENU_ITEM_CLASS);
-        statisticContainer.innerHTML = ``;
-        filmsContainer.classList.remove(HIDDEN_CLASS);
-        statisticComponent.destroy();
-      } else if (!statisticButton.classList.contains(ACTIVE_MENU_ITEM_CLASS)) {
-        statisticButton.classList.add(ACTIVE_MENU_ITEM_CLASS);
-        statisticContainer.innerHTML = ``;
-        filmsContainer.classList.add(HIDDEN_CLASS);
-        statisticContainer.appendChild(statisticComponent.element);
-      }
-    });
-
+    statisticButton.addEventListener(`click`, () => renderStatistic(films));
     footerStatisticContainer.innerHTML = `<p>${films.length} movies inside</p>`;
-    profileRatingContainer.textContent = getProfileRating(films);
 
-    // Показать больше карточек showMoreButton
+    // Вывести уровень пользователя
+    userRankContainer.textContent = getUserRank(films);
 
-    showMoreButton.addEventListener(`click`, () => {
-      const visibleFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
-      const activeItem = mainNavigation.querySelector(`.${ACTIVE_MENU_ITEM_CLASS}`);
-
-      const checkFilterType = (type) => {
-        filterMainFilmsByType(films, type, visibleFilmCards.length + MAIN_BLOCK_MAX_CARDS, visibleFilmCards.length);
-        const allInTypeFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
-
-        if (allInTypeFilmCards.length === countFilmsWithStatus(films, type)) {
-          showMoreButton.classList.add(HIDDEN_CLASS);
-        }
-      };
-
-      switch (activeItem.id) {
-        case FilterType.WATCHLIST: checkFilterType(FilmState.IN_WATCHLIST);
-          break;
-        case FilterType.HISTORY: checkFilterType(FilmState.WATCHED);
-          break;
-        case FilterType.FAVORITES: checkFilterType(FilmState.FAVORITE);
-          break;
-        default:
-          renderFilmsList(films
-            .slice(visibleFilmCards.length, visibleFilmCards.length + MAIN_BLOCK_MAX_CARDS), mainFilmsContainer);
-          const allFilmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
-
-          if (allFilmCards.length === films.length) {
-            showMoreButton.classList.add(HIDDEN_CLASS);
-          }
-      }
-    });
+    // Показать больше карточек
+    showMoreButton.addEventListener(`click`, () => showMore(films));
   })
   .catch(() => {
-    showPlaceholder(`Something went wrong while loading movies. Check your connection or try again later 😓`);
+    showPlaceholder(ERROR_MESSAGE);
   });
