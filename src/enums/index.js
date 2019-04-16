@@ -5,6 +5,11 @@ export const Method = {
   DELETE: `DELETE`
 };
 
+export const ResponseStatus = {
+  OK: 200,
+  MULTIPLY_CHOICE: 300,
+};
+
 export const Time = {
   YEAR: 365,
   DAY: 86400000,

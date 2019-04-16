@@ -10,7 +10,7 @@ class Provider {
   }
 
   updateFilm({id, data}) {
-    if (this._isOnline()) {
+    if (Provider._isOnline()) {
       return this._api.updateFilm({id, data}).then((film) => {
         this._store.setItem({key: film.id, item: film.toRAW()});
         return film;
@@ -25,7 +25,7 @@ class Provider {
   }
 
   getFilms() {
-    if (this._isOnline()) {
+    if (Provider._isOnline()) {
       return this._api.getFilms().then((films) => {
         films.map((film) => this._store.setItem({key: film.id, item: film.toRAW()}));
         return films;
@@ -43,7 +43,7 @@ class Provider {
     return this._api.syncFilms({films: objectToArray(this._store.getAll())});
   }
 
-  _isOnline() {
+  static _isOnline() {
     return window.navigator.onLine;
   }
 }

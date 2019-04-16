@@ -89,11 +89,12 @@ const renderFilmsList = (films, container, showControls = true) => {
     container.appendChild(filmCard.render());
 
     filmCard.onCommentsClick = () => {
-      if (document.body.querySelector(`.film-details`)) {
-        filmPopup.destroy();
+      const filmDetailsModal = document.querySelector(`.film-details`);
+
+      if (filmDetailsModal) {
+        filmDetailsModal.remove();
       }
 
-      filmPopup.render();
       document.body.appendChild(filmPopup.render());
     };
 
@@ -296,7 +297,7 @@ const renderFilters = (container, filters, films) => {
     const filterComponent = new Filter(filterData);
     container.insertAdjacentElement(`afterbegin`, filterComponent.render());
 
-    filterComponent.onFilter = () => {
+    filterComponent.onClick = () => {
       const filmCards = mainFilmsContainer.querySelectorAll(`.film-card`);
       const activeMenuItem = mainNavContainer.querySelector(`.${ACTIVE_MENU_ITEM_CLASS}`);
 

@@ -4,14 +4,14 @@ class Search extends Component {
   constructor() {
     super();
     this._onChange = null;
-    this._onSearchChange = this._onSearchChange.bind(this);
+    this._onChangeValue = this._onChangeValue.bind(this);
   }
 
   set onChange(fn) {
     this._onChange = fn;
   }
 
-  _onSearchChange(event) {
+  _onChangeValue(event) {
     if (typeof this._onChange === `function`) {
       this._onChange(event.target.value);
     }
@@ -26,12 +26,12 @@ class Search extends Component {
 
   addEventListeners() {
     this._element.querySelector(`.search__field`)
-      .addEventListener(`keyup`, this._onSearchChange);
+      .addEventListener(`keyup`, this._onChangeValue);
   }
 
   removeEventListeners() {
     this._element.querySelector(`.search__field`)
-      .removeEventListener(`keydown`, this._onSearchChange);
+      .removeEventListener(`keydown`, this._onChangeValue);
   }
 }
 

@@ -1,8 +1,8 @@
 import ModelFilmCard from './models/film-card';
-import {Method} from './enums';
+import {Method, ResponseStatus} from './enums';
 
 const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
+  if (response.status >= ResponseStatus.OK && response.status < ResponseStatus.MULTIPLY_CHOICE) {
     return response;
   } else {
     throw new Error(`${response.status}: ${response.statusText}`);

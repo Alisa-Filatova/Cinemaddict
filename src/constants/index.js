@@ -12,3 +12,17 @@ export const EMOJIS = {
   'neutral-face': `😐`,
   'grinning': `😀`,
 };
+
+export const USER_RANK_VALUES = {
+  novice: {
+    min: 1,
+    max: 10,
+  },
+  fan: {
+    min: 11,
+    max: 19,
+  },
+  movieBuff: {
+    min: 20,
+  },
+};

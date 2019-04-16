@@ -104,7 +104,7 @@ export const createFilmCard = () => ({
   score: generateRandomNumber(MAX_RATE_NUMBER),
   releaseDate: Date.now() + getRandomInteger(Time.YEAR, (-Time.YEAR) * getRandomInteger(Time.DAY)),
   country: getRandomArrayElement(COUNTRIES),
-  duration: getRandomInteger(Time.HOUR * 2.5, Time.HOUR),
+  duration: getRandomInteger(Time.HOUR * Time.MINUTE, Time.HOUR),
   genres: GENRES.sort(compareRandom).slice(0, generateRandomNumber(GENRES.length)),
   releaseCountry: getRandomArrayElement(COUNTRIES),
   comments: COMMENTS.slice(0, generateRandomNumber(COMMENTS.length)),

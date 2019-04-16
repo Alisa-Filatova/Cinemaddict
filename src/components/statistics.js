@@ -22,10 +22,10 @@ class Statistic extends Component {
     this._filteredFilms = this._watchedFilms;
     this._chart = null;
 
-    this._filterByPeriod = this._filterByPeriod.bind(this);
+    this._onFilterByPeriod = this._onFilterByPeriod.bind(this);
   }
 
-  _filterByPeriod() {
+  _onFilterByPeriod() {
     const filter = this._element.querySelector(`.statistic__filters-input:checked`).value;
 
     switch (filter) {
@@ -60,7 +60,7 @@ class Statistic extends Component {
   }
 
   _getGenresValues() {
-    let filteredFilms = {};
+    const filteredFilms = {};
 
     this._filteredFilms.forEach((film) => {
       film.genres.map((genre) => {
@@ -200,13 +200,12 @@ class Statistic extends Component {
       <div class="statistic__chart-wrap">
         <canvas class="statistic__chart" width="1000"></canvas>
       </div>
-    
     </div>`;
   }
 
   addEventListeners() {
     this._element.querySelectorAll(`.statistic__filters-input`).forEach((element) => {
-      element.addEventListener(`click`, this._filterByPeriod);
+      element.addEventListener(`click`, this._onFilterByPeriod);
     });
   }
 
@@ -219,7 +218,7 @@ class Statistic extends Component {
 
   removeEventListeners() {
     this._element.querySelectorAll(`.statistic__filters-input`).forEach((element) => {
-      element.removeEventListener(`click`, this._filterByPeriod);
+      element.removeEventListener(`click`, this._onFilterByPeriod);
     });
   }
 }

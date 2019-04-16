@@ -8,19 +8,19 @@ class Filter extends Component {
     this._isActive = data.isActive;
     this._type = data.type;
 
-    this._onFilter = null;
-    this._onFilterClick = this._onFilterClick.bind(this);
+    this._onClick = null;
+    this._onClickEvent = this._onClickEvent.bind(this);
   }
 
-  set onFilter(fn) {
-    this._onFilter = fn;
+  set onClick(fn) {
+    this._onClick = fn;
   }
 
-  _onFilterClick(event) {
+  _onClickEvent(event) {
     event.preventDefault();
 
-    if (typeof this._onFilter === `function`) {
-      this._onFilter();
+    if (typeof this._onClick === `function`) {
+      this._onClick();
     }
   }
 
@@ -39,11 +39,11 @@ class Filter extends Component {
   }
 
   addEventListeners() {
-    this._element.addEventListener(`click`, this._onFilterClick);
+    this._element.addEventListener(`click`, this._onClickEvent);
   }
 
   removeEventListeners() {
-    this._element.removeEventListener(`click`, this._onFilterClick);
+    this._element.removeEventListener(`click`, this._onClickEvent);
   }
 }
 

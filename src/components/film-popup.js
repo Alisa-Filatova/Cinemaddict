@@ -292,7 +292,7 @@ class FilmPopup extends Component {
     ];
 
     return (
-      `<section class="film-details" id="${this._id}">
+      `<section class="film-details" id="${this._id}${this._title}">
         <form class="film-details__inner" action="" method="get">
           <div class="film-details__close">
             <button class="film-details__close-btn" type="button">close</button>
